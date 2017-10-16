@@ -1,0 +1,35 @@
+import json
+from pymemcache.client.base import Client
+
+
+class Memcached:
+    def __init__(self, config):
+        self.config = config
+        self.memcache_client = Client((self.config["ip"], self.config["port"]),
+                                      serializer=self.json_serializer,
+                                      deserializer=self.json_deserializer,
+                                      connect_timeout=self.config["connect_timeout"],
+                                      timeout=self.config["timeout"])
+
+    def json_serializer(self, key, value):
+        if type(value) == str:
+            return value, 1
+        return json.dumps(value), 2
+
+    def json_deserializer(self, key, value, flags):
+        if flags == 1:
+            return value
+        if flags == 2:
+            return json.loads(value)
+        raise Exception("Unknown serialization format")
+
+    def write(self, key, message):
+        print("write to cache: {}".format(key))
+        self.memcache_client.set(key,
+                                 message,
+                                 expire=self.config["key_expiration"],
+                                 noreply=self.config["noreply_flag"])
+
+    def read(self, key):
+        print("read from cache: {}".format(key))
+        return self.memcache_client.get(key)

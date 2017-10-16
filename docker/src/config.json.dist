@@ -1,0 +1,66 @@
+{
+  "local": {
+    "label": "local-container",
+    "docker_socket": "/var/run/docker.sock",
+    "device": "/dev/ttyUSB0",
+    "volume_name": "sensor-socket",
+    "socket_file": "/var/run/sensor/sensor.sock",
+    "image": "docker-registry/ub/pisensor/montreal:latest-arm",
+    "environment": {
+      "SERVICE":"sensor",
+      "SOCKET_FILE": "/var/run/sensor/sensor.sock"
+    }
+  },
+ "device":{
+   "hostname_path":"/etc/pi-hostname",
+   "machine_id_path":"/etc/machine-id",
+   "location_info":"/etc/location.info"
+ },
+ "sensors":{
+   "ash2200": {
+     "enabled":true,
+     "ids":"",
+     "device":"/dev/ttyUSB0",
+     "baudrate":"9600",
+     "timeout":"200"
+   },
+   "interval":30
+ },
+ "nsq":{
+   "enabled":true,
+   "nsqd":{
+       "ip":"nsqd",
+       "name":"nsqd",
+       "port":"4151",
+       "timeout":60
+   },
+   "nsqlookupd":{
+       "ip":"nsqlookupd",
+       "name":"nsqlookupd",
+       "port":"4161",
+       "interval":300,
+       "timeout":60
+      },
+   "topics":{
+       "data_topic":"sensors"
+   },
+   "channels":{
+      "data_channel":"sensors"
+   }
+ },
+ "memcached": {
+     "enabled":true,
+     "ip":"memcached",
+     "port":11211,
+     "connect_timeout":180,
+     "timeout":180,
+     "key_expiration":180,
+     "noreply_flag":true
+ },
+ "logging":{
+   "enabled":true,
+   "level":"debug",
+   "file":"",
+   "format":"[%(asctime)s] %(levelname)-8s %(message)s"
+ }
+}

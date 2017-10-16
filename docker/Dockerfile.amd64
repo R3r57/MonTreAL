@@ -1,0 +1,29 @@
+#FROM arm32v7/python:3.6.2-slim
+#COPY src/qemu-arm-static /usr/bin/
+
+FROM python:3.6.2-slim
+
+WORKDIR /app
+
+COPY src/requirements.txt /app/requirements.txt
+RUN pip3 install -r requirements.txt
+
+#COPY src/docker-entrypoint.py /usr/local/bin/docker-entrypoint.py
+#RUN chmod +x /usr/local/bin/docker-entrypoint.py
+
+COPY src /app/
+RUN chmod +x /app/docker-entrypoint.py
+
+ENTRYPOINT ["/app/docker-entrypoint.py"]
+
+# Add metadata
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+ARG VCS_URL
+LABEL org.label-schema.schema-version="1.0" \
+      org.label-schema.vendor="Universitätsbibliothek Bamberg" \
+      org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.version=$VERSION \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url=$VCS_URL

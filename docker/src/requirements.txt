@@ -1,0 +1,7 @@
+docker
+gnsq
+gevent
+pyserial
+flask
+flask-restful
+pymemcache
