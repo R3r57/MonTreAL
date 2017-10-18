@@ -1,15 +1,13 @@
-#FROM arm32v7/python:3.6.2-slim
-#COPY src/qemu-arm-static /usr/bin/
-
-FROM python:3.6.2-slim
+FROM arm32v7/python:3.6.2-slim
+COPY src/qemu-arm-static /usr/bin/
 
 WORKDIR /app
 
+RUN apt update && \
+    apt install -qqy gcc
+
 COPY src/requirements.txt /app/requirements.txt
 RUN pip3 install -r requirements.txt
-
-#COPY src/docker-entrypoint.py /usr/local/bin/docker-entrypoint.py
-#RUN chmod +x /usr/local/bin/docker-entrypoint.py
 
 COPY src /app/
 RUN chmod +x /app/docker-entrypoint.py

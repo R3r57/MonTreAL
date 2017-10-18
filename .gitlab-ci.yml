@@ -28,11 +28,11 @@
     - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
     # add qemu
     - apk add -U curl
-    - curl -sL https://github.com/multiarch/qemu-user-static/releases/download/v2.9.1/qemu-arm-static.tar.gz | tar -xzC docker/src/
+    - curl -sL https://github.com/multiarch/qemu-user-static/releases/download/v2.9.1/qemu-arm-static.tar.gz | tar -xzC src/
     # build and push image
 #    - docker build --pull --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=${CI_COMMIT_SHA} --build-arg VERSION=${CI_COMMIT_TAG} -t ${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID} .
 
-    - docker build --pull --build-arg VCS_URL=${CI_PROJECT_URL} --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=${CI_COMMIT_SHA} --build-arg VERSION=${CI_COMMIT_TAG} -t ${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}${ARCH} -f ./docker/Dockerfile${DOTARCH} ./docker/
+    - docker build --pull --build-arg VCS_URL=${CI_PROJECT_URL} --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=${CI_COMMIT_SHA} --build-arg VERSION=${CI_COMMIT_TAG} -t ${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}${ARCH} -f ./Dockerfile${DOTARCH} ./
     - docker push ${CI_REGISTRY_IMAGE}:${CI_PIPELINE_ID}${ARCH}
 
 #####################################
@@ -59,7 +59,7 @@ pep8:
   allow_failure: true
   script:
     - pip3 install pycodestyle
-    - cd docker/src
+    - cd src/
     - find . -type f -name '*.py' -exec  pycodestyle --first {} \;
 
 ###################
