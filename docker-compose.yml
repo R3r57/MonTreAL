@@ -8,9 +8,7 @@ services:
     image: nsqio/nsq:latest
     entrypoint: nsqlookupd
     ports:
-      # tcp
       - "4160:4160"
-      # http
       - "4161:4161"
     networks:
       backend:
@@ -19,20 +17,16 @@ services:
     image: nsqio/nsq:latest
     entrypoint: ["nsqd", "--lookupd-tcp-address=nsqlookupd:4160"]
     ports:
-      # tcp
       - "4150:4150"
-      # http
       - "4151:4151"
-      # https
-#      - "4152:4152"
     networks:
       backend:
 
-  memcached:
-    image: memcached:latest
-    command: memcached -vv
-    networks:
-      backend:
+  #memcached:
+  #  image: memcached:latest
+  #  command: memcached -vv
+  #  networks:
+  #    backend:
 
   nsqadmin:
     image: nsqio/nsq:latest
@@ -42,8 +36,14 @@ services:
     ports:
       - "4171:4171"
 
+  nsqcli:
+    image: nsqio/nsq:latest
+    command: ["nsq_tail","-lookupd-http-address","nsqlookupd:4161","-topic","sensors"]
+    networks:
+      backend:
+
 #################################################
-  manager:
+  localmanager:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
@@ -52,68 +52,70 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./location.info:/etc/location.info
       - ./pi-hostname:/etc/pi-hostname
+      - ./montreal.json:/app/montreal.json
     networks:
       backend:
     tty: true
     environment:
-      SERVICE: "manager"
+      CONFIG: ./montreal.json
+      SERVICE: "localmanager"
 
 #################################################
-  web:
-    build:
-      context: ./
-      dockerfile: Dockerfile.amd64
-    image: montreal
-    networks:
-      backend:
-    tty: true
-    ports:
-      - "5000:5000"
-    environment:
-      SERVICE: "prtgweb"
+  #web:
+  #  build:
+  #    context: ./
+  #    dockerfile: Dockerfile.amd64
+  #  image: montreal
+  #  networks:
+  #    backend:
+  #  tty: true
+  #  ports:
+  #    - "5000:5000"
+  #  environment:
+  #    SERVICE: "prtgweb"
 
 #################################################
-  prtg:
-    build:
-      context: ./
-      dockerfile: Dockerfile.amd64
-    image: montreal
-    networks:
-      backend:
-    tty: true
-    environment:
-      SERVICE: "prtgconvert"
+  #prtg:
+  #  build:
+  #    context: ./
+  #    dockerfile: Dockerfile.amd64
+  #  image: montreal
+  #  networks:
+  #    backend:
+  #  tty: true
+  #  environment:
+  #    SERVICE: "prtgconvert"
 
-  json:
-    build:
-      context: ./
-      dockerfile: Dockerfile.amd64
-    image: montreal
-    networks:
-      backend:
-    tty: true
-    environment:
-      SERVICE: "rawjson"
+  #json:
+  #  build:
+  #    context: ./
+  #    dockerfile: Dockerfile.amd64
+  #  image: montreal
+  #  networks:
+  #    backend:
+  #  tty: true
+  #  environment:
+  #    SERVICE: "rawjson"
 
 #################################################
-  prtgregister:
-    build:
-      context: ./
-      dockerfile: Dockerfile.amd64
-    image: montreal
-    networks:
-      backend:
-    tty: true
-    environment:
-      SERVICE: "prtgregister"
+  #prtgregister:
+  #  build:
+  #    context: ./
+  #    dockerfile: Dockerfile.amd64
+  #  image: montreal
+  #  networks:
+  #    backend:
+  #  tty: true
+  #  environment:
+  #    SERVICE: "prtgregister"
 
-  list:
-    build:
-      context: ./
-      dockerfile: Dockerfile.amd64
-    image: montreal
-    networks:
-      backend:
-    tty: true
-    environment:
-      SERVICE: "sensorlist"
+  #list:
+  #  build:
+  #    context: ./
+  #    dockerfile: Dockerfile.amd64
+  #  image: montreal
+  #  networks:
+  #    backend:
+  #  tty: true
+  #  environment:
+  #    SERVICE: "sensorlist"
