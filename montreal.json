@@ -1,11 +1,11 @@
 {
   "local": {
     "label": "local-container",
-    "image": "montreal:latest",
-    "device": "/dev/ttyUSB0",
-    "network_name": "docker_backend",
+    "image": "montreal",
+    "network_name": "montreal_backend",
     "environment": {
-      "SERVICE": "sensor"
+      "SERVICE": "sensor",
+      "TYPE": "mock"
     }
   },
   "metadata": {
@@ -20,7 +20,7 @@
       "baudrate": "9600",
       "timeout": "200"
     },
-    "interval": 30
+    "interval": 120
   },
   "nsq": {
     "nsqd": {
