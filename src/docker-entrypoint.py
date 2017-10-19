@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-import os
-import signal
-import threading
-import time
-import json
-import sys
-import datetime
-import logging
+import os, signal, threading, time, json, sys, datetime, logging
 
 from multiprocessing import Queue as mpQueue
 from queue import Queue

@@ -1,9 +1,4 @@
-import logging
-import threading
-import socket
-import sys
-import os
-import time
+import logging, threading, socket, sys, os, time
 from queue import Queue
 
 logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})

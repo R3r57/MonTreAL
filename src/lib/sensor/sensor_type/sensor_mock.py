@@ -1,7 +1,4 @@
-import logging
-import os
-import threading
-import json
+import logging, os, threading, json
 from lib.sensor.sensor_type.data import Measurement
 
 logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})

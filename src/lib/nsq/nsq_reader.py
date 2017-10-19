@@ -1,7 +1,4 @@
-import os
-import logging
-import threading
-import gnsq
+import os, logging, threading, gnsq
 from multiprocessing import Queue
 from multiprocessing import Process
 

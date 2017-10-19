@@ -1,8 +1,4 @@
-import logging
-import threading
-import json
-import os
-import pickle
+import logging, threading, json, os
 from queue import Queue
 from lib.sensor.sensor_type.data import SensorData, Measurement
 
