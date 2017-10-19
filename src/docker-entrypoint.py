@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-import docker
 import os
 import signal
 import threading
@@ -8,11 +6,10 @@ import time
 import json
 import sys
 import datetime
+import logging
 
 from multiprocessing import Queue as mpQueue
 from queue import Queue
-
-from lib.local_container import LocalContainer
 
 from lib.socket.socket_reader import SocketReader
 from lib.socket.socket_writer import SocketWriter
@@ -29,12 +26,15 @@ from lib.prtg.sensor_list import SensorList
 from lib.prtg.prtg import PRTG
 from lib.prtg.raw import RawMem
 
-from lib.sensor.usb_mock import USBmock
-from lib.sensor.ash2200 import ASH2200, USBSerial
+from lib.sensor.sensor_type.sensor_mock import SensorMock
+from lib.sensor.sensor_type.ash2200 import ASH2200, USBSerial
 from lib.sensor.metadata_appender import MetaDataAppender
+from lib.sensor.local_container import LocalContainer
 
+logging.basicConfig(format="[%(class)s] %(asctime)s %(levelname)s: %(message)s", datefmt="%Y/%m/%d %H:%M:%S", level=logging.INFO)
+logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
 
-class MainProgramm:
+class MainProgram:
 
     def __init__(self, service_type):
         self.service_type = service_type
@@ -42,88 +42,88 @@ class MainProgramm:
         self.event = threading.Event()
         self.threads = []
         self.register_signals()
+        logger.info("Main program for {} initialized successfully".format(service_type))
 
     def register_signals(self):
         signal.signal(signal.SIGHUP, self.handle_signals)
         signal.signal(signal.SIGINT, self.handle_signals)
         signal.signal(signal.SIGTERM, self.handle_signals)
-        # signal.signal(signal.SIGKILL, self.handle_signals)
 
     def __get_config(self):
-        if "CONFIG_FILE" in os.environ:
-            secretfile = os.environ['CONFIG_FILE']
-        else:
-            secretfile = os.getcwd() + "/config.json"
-        print("CONFIG_FILE: ", secretfile)
+        secretfile = os.environ['CONFIG']
+        logger.info("Configuration file set to {}".format(secretfile))
         if os.path.isfile(secretfile):
             with open(secretfile, "r") as secret_file:
                 data = json.load(secret_file)
+                logger.info("Sucessfully red config")
             return data
         return None
 
     def handle_signals(self, signum, stack):
-        print("Signal {} caught".format(signum))
+        logger.info("Signal {} caught".format(signum))
         self.start = datetime.datetime.now()
         self.terminate_threads()
 
     def __terminate_threads(self):
         self.event.set()
-        time.sleep(0.2)
+        time.sleep(2)
         while not len(self.threads) == 0:
             for t in self.threads:
-                t.join(timeout=0.2)
-                print("joining ", t.name)
+                counter = 1
+                t.join(timeout=2)
+                logger.info("Joining {} (attempt: {})".format(t.name, counter))
+                counter = counter + 1
                 if not t.isAlive():
                     self.threads.remove(t)
                     break
 
     def terminate_threads(self):
         self.__terminate_threads()
-        print("Duration till exit: ", str(datetime.datetime.now() - self.start))
+        logger.info("Duration till exit: {}".format(str(datetime.datetime.now() - self.start)))
         sys.exit(0)
 
     def __register_thread(self, t):
-        print("add thread {} as {}".format(t.name, len(self.threads)))
         if t not in self.threads:
             self.threads.append(t)
+            logger.info("Add thread {} as {}".format(t.name, len(self.threads)))
 
     def __start_threads(self):
         for t in self.threads:
             t.start()
 
     def __create_threads(self):
+        logger.info("Creating thread for {}".format(self.service_type))
 
-        if self.service_type == "manager":
-            self.__create_manager()
-            self.__create_docker()
-
-        elif self.service_type == "prtgconvert":
-            self.__create_prtgconvert()
-
-        elif self.service_type == "prtgweb":
-            self.__create_prtgweb()
-
-        elif self.service_type == "prtgregister":
-            self.__create_prtgregister()
+        if self.service_type == "localmanager":
+            self.__create_local_manager()
+            self.__create_local_container()
 
         elif self.service_type == "sensor":
-            self.__create_sensor()
+            self.__create_sensor(os.environ['TYPE'])
 
-        elif self.service_type == "rawjson":
-            self.__create_rawjson()
+        # elif self.service_type == "prtgconvert":
+        #     self.__create_prtgconvert()
 
-        elif self.service_type == "sensorlist":
-            self.__create_sensorlist()
+        # elif self.service_type == "prtgweb":
+        #     self.__create_prtgweb()
+
+        # elif self.service_type == "prtgregister":
+        #     self.__create_prtgregister()
+
+        # elif self.service_type == "rawjson":
+        #     self.__create_rawjson()
+
+        # elif self.service_type == "sensorlist":
+        #     self.__create_sensorlist()
 
         else:
-            print("No service selected. Please set 'SERVICE' as environment variable with:")
-            print("manager|prtgconvert|prtgweb|sensor|all")
+            logger.info("No service selected. Please set 'SERVICE' as environment.")
 
         self.__start_threads()
 
     def run(self):
         self.__create_threads()
-        print("main loop event is set: ", str(self.event.is_set()))
+        logger.info("Main loop event set: {}".format(str(self.event.is_set())))
         while not self.event.is_set():
             restart = False
             self.event.wait(30)
@@ -136,9 +136,15 @@ class MainProgramm:
                 self.event.clear()
                 self.threads = []
                 self.__create_threads()
-        print("main loop event is set on exit: ", str(self.event.is_set()))
+        logger.info("Main loop event set on exit: {}".format(str(self.event.is_set())))
 
-    def __create_manager(self):
+
+##################################################################################
+# Create Services                                                                #
+##################################################################################
+
+#------- Local Sensor
+    def __create_local_manager(self):
             message_queue = Queue(maxsize=10)
             socket = SocketReader("SocketReader",
                                   self.event,
@@ -146,12 +152,6 @@ class MainProgramm:
             self.__register_thread(socket)
 
             meta_queue = Queue(maxsize=10)
-            nsqW = NsqWriter("NsqWriter",
-                             self.event,
-                             meta_queue,
-                             self.config["nsq"])
-            self.__register_thread(nsqW)
-
             meta = MetaDataAppender("MetaData",
                                     self.event,
                                     message_queue,
@@ -159,97 +159,108 @@ class MainProgramm:
                                     self.config['metadata'])
             self.__register_thread(meta)
 
+            nsqW = NsqWriter("NsqWriter",
+                             self.event,
+                             meta_queue,
+                             self.config["nsq"])
+            self.__register_thread(nsqW)
 
-    def __create_docker(self):
+
+
+    def __create_local_container(self):
             container = LocalContainer("LocalContainer",
                                        self.event,
                                        {"local": self.config['local'],
                                         "sensors": self.config['sensors']})
             self.__register_thread(container)
 
+    def __create_sensor(self, type):
+            sensor_queue = Queue()
 
-    def __create_prtgconvert(self):
-            update_queue = mpQueue(maxsize=10)
-            nsqR = NsqReader("NsqReader",
-                             self.event,
-                             update_queue,
-                             self.config["nsq"],
-                             channel="PRTGconverter")
-            self.__register_thread(nsqR)
+            if type == "ash2200":
+                usb_serial = USBSerial("/dev/ttyUSB0", 9600, 20)
+                ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
+                self.__register_thread(ash2200)
 
-            prtgconv = PRTGconverter("PRTGconverter",
-                                     self.event,
-                                     update_queue,
-                                     self.config["memcached"])
-            self.__register_thread(prtgconv)
+            elif type == "mock":
+                mock = SensorMock("Mock", self.event, sensor_queue)
+                self.__register_thread(mock)
 
+            else:
+                logger.info("No sensortype selected: {}".format(type))
 
-    def __create_prtgweb(self):
-            prtgweb = PRTGweb("PRTGweb", self.event, self.config["memcached"])
-            self.__register_thread(prtgweb)
-
-    def __create_prtgregister(self):
-            message_queue = mpQueue()
-            nsq_r = NsqReader("nsq_reader",
-                              self.event,
-                              message_queue,
-                              self.config["nsq"],
-                              channel="sensor_overwatcher")
-            self.__register_thread(nsq_r)
-
-            # Compare with existing PRTG sensors
-            sensor_overwatcher = prtg_thread(self.event, message_queue)
-            self.__register_thread(sensor_overwatcher)
-
-
-    def __create_sensor(self):
-            usb_queue = Queue()
             socket = SocketWriter("SocketWriter",
                                   self.event,
-                                  usb_queue,
+                                  sensor_queue,
                                   os.environ['SOCKET'])
             self.__register_thread(socket)
 
-            usb_serial = USBSerial("/dev/ttyUSB0", 9600, 20)
-            ash2200 = ASH2200("USB", usb_serial, self.event, usb_queue)
-            self.__register_thread(ash2200)
 
 
-    def __create_rawjson(self):
-            update_queue = mpQueue(maxsize=10)
-            nsqR = NsqReader("NsqReader",
-                             self.event,
-                             update_queue,
-                             self.config["nsq"],
-                             channel="RawMem")
-            self.__register_thread(nsqR)
+    # def __create_prtgconvert(self):
+    #         update_queue = mpQueue(maxsize=10)
+    #         nsqR = NsqReader("NsqReader",
+    #                          self.event,
+    #                          update_queue,
+    #                          self.config["nsq"],
+    #                          channel="PRTGconverter")
+    #         self.__register_thread(nsqR)
 
-            rawmem = RawMem("RAWMem", self.event, update_queue, self.config["memcached"])
-            self.__register_thread(rawmem)
+    #         prtgconv = PRTGconverter("PRTGconverter",
+    #                                  self.event,
+    #                                  update_queue,
+    #                                  self.config["memcached"])
+    #         self.__register_thread(prtgconv)
 
-    def __create_sensorlist(self):
-            update_queue = mpQueue()
-            nsqR = NsqReader("NsqReader",
-                             self.event,
-                             update_queue,
-                             self.config["nsq"],
-                             channel="SensorList")
-            self.__register_thread(nsqR)
 
-            slist = SensorList("SensorList", self.event, update_queue)
-            self.__register_thread(slist)
+    # def __create_prtgweb(self):
+    #         prtgweb = PRTGweb("PRTGweb", self.event, self.config["memcached"])
+    #         self.__register_thread(prtgweb)
+
+    # def __create_prtgregister(self):
+    #         message_queue = mpQueue()
+    #         nsq_r = NsqReader("nsq_reader",
+    #                           self.event,
+    #                           message_queue,
+    #                           self.config["nsq"],
+    #                           channel="sensor_overwatcher")
+    #         self.__register_thread(nsq_r)
+
+    #         # Compare with existing PRTG sensors
+    #         sensor_overwatcher = prtg_thread(self.event, message_queue)
+    #         self.__register_thread(sensor_overwatcher)
+
+
+    # def __create_rawjson(self):
+    #         update_queue = mpQueue(maxsize=10)
+    #         nsqR = NsqReader("NsqReader",
+    #                          self.event,
+    #                          update_queue,
+    #                          self.config["nsq"],
+    #                          channel="RawMem")
+    #         self.__register_thread(nsqR)
+
+    #         rawmem = RawMem("RAWMem", self.event, update_queue, self.config["memcached"])
+    #         self.__register_thread(rawmem)
+
+    # def __create_sensorlist(self):
+    #         update_queue = mpQueue()
+    #         nsqR = NsqReader("NsqReader",
+    #                          self.event,
+    #                          update_queue,
+    #                          self.config["nsq"],
+    #                          channel="SensorList")
+    #         self.__register_thread(nsqR)
+
+    #         slist = SensorList("SensorList", self.event, update_queue)
+    #         self.__register_thread(slist)
 
 
 if __name__ == '__main__':
-
-    print("#" * 10)
-    print("Montreal")
-    print("#" * 10)
-
     service_type = None
     if "SERVICE" in os.environ:
         service_type = os.environ['SERVICE']
-        print("Start Service: ", service_type)
-        p = MainProgramm(service_type)
+        logger.info("Starting service {}".format(service_type))
+        p = MainProgram(service_type)
         p.run()
-        print("main running")
+        logger.info("Main program for {} is running".format(service_type))

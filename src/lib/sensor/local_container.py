@@ -4,7 +4,9 @@ import threading
 import json
 import os
 import base64
+import logging
 
+logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
 
 class LocalContainer (threading.Thread):
     def __init__(self, name, event, config):
@@ -14,14 +16,15 @@ class LocalContainer (threading.Thread):
         self.config = config
         self.dcli = docker.DockerClient.from_env()
         self.container = None
+        logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
+        logger.info("Started: {}".format(self.name))
         # self.pull_image()
-        print("Starting " + self.name)
         while not self.event.is_set():
             self.clean_old()
             if len(self.dcli.containers.list(filters={"label": self.config["local"]['label']})) == 0:
-                self.run_container()
+                self.create_container()
                 self.container.start()
                 self.event.wait(30)
             if self.container.status in ["running", "created"]:
@@ -35,6 +38,7 @@ class LocalContainer (threading.Thread):
             self.container = None
 
     def clean_old(self):
+        logger.info("Cleaning old container...")
         containerlist = self.dcli.containers.list(filters={"label": self.config["local"]['label']}, all=True)
         if len(containerlist) > 0:
             for container in containerlist:
@@ -44,6 +48,7 @@ class LocalContainer (threading.Thread):
                     print("Cleanup container with label: ", self.config["local"]['label'])
                     print("cleanup {}: {}".format(self.container.id, self.container.status))
                     container.remove(force=True, v=True)
+        logger.info("...success")
 
     def get_ip_address(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -69,13 +74,11 @@ class LocalContainer (threading.Thread):
         username = self.get_secret("REGISTRY_USERNAME")
         password = self.get_secret("REGISTRY_PASSWORD")
         image = config["local"]['image']
-        # dcli.login(username=username,password=password,registry=registry)
         self.dcli.images.pull(image, auth_config={"username": username,
                                                   "password": password})
 
-    def run_container(self):
-        VOLUMES = []
-
+    def create_container(self):
+        logger.info("Creating container...")
         try:
             DEVICE = [self.config["local"]["device"] + ":" + self.config["local"]["device"]]
         except KeyError:
@@ -98,4 +101,5 @@ class LocalContainer (threading.Thread):
                                                      environment=ENVIRONMENT,
                                                      labels={LABEL: ""},
                                                      network=self.config["local"]["network_name"],
-                                                     volumes=VOLUMES)
+                                                     volumes=[])
+        logger.info("...success")

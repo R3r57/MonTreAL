@@ -1,71 +1,62 @@
+import logging
 import threading
 import socket
 import sys
 import os
+import time
 from queue import Queue
 
+logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
 
 class SocketReader (threading.Thread):
-    def __init__(self, name, event, queue,
-                 server_address="0.0.0.0", server_port=4711):
+    def __init__(self, name, event, queue, server_address="0.0.0.0", server_port=4711):
         threading.Thread.__init__(self)
         self.name = name
         self.event = event
         self.server_address = server_address
         self.server_port = server_port
         self.queue = queue
-
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(0.0)  # equals non-blocking
+        logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
-        print("Starting " + self.name)
-        # Bind the socket to the port
-        print('starting up on {}:{}'.format(self.server_address,
-                                            str(self.server_port)))
+        logger.info("Started {}".format(self.name))
         self.sock.bind((self.server_address, self.server_port))
-        # Listen for incoming connections
+        logger.info("Binded socket to {}:{}".format(self.server_address, str(self.server_port)))
         self.sock.listen(1)
-        # Wait for a connection
         try:
             self.sock.makefile()
         except Exception as e:
-            print("makefile", e)
+            logger.error("{}".format(e))
 
-        print('waiting for a connection')
         try:
             while not self.event.is_set():
                 try:
+                    logger.info('Waiting for incomming connections...')
                     self.sock.settimeout(None)  # equals blocking
                     connection, client_address = self.sock.accept()
                     if connection:
-                        print('connection established')
+                        logger.info("Connection established")
+                        logger.info("Start receiving data...")
                         while not self.event.is_set():
                             message = b''
-                            print("Start receiving")
                             while not self.event.is_set():
-                                # connection.settimeout(2)
-                                # Receive the data in small chunks
                                 chunk = connection.recv(1)
-
                                 if not chunk or chunk == "\n".encode("utf-8"):
-                                    # message = b''
                                     break
                                 message += chunk
-
-                            print("received via socket")
-                            # : {}".format(str(message.decode("utf-8"))))
-                            self.queue.put(str(message.decode("utf-8")))
-                            print('no more data')
-
-                        print("stop",
-                              self.name,
-                              "event is set on exit: ",
-                              str(self.event.is_set()))
+                            if message:
+                                logger.info("Successfully received data")
+                                decoded_message = str(message.decode("utf-8"))
+                                self.queue.put(decoded_message)
+                                logger.info("Data put into queue: {}".format(decoded_message))
+                            else:
+                                time.sleep(1) 
+                        logger.info("Stopped {}: Event is set on exit: {}".format(self.name, str(self.event.is_set())))
                 except socket.timeout:
-                    print("socket timeout")
+                    logger.error("Socket timed out...retrying")
                 except Exception as e:
-                    print("SOCKET ERROR", e)
+                    logger.error("Socket error: {}".format(e))
         finally:
-            # Clean up the connection
             connection.close()

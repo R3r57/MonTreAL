@@ -1,10 +1,12 @@
+import logging
 import threading
 import json
 import os
 import pickle
 from queue import Queue
-from lib.sensor.sensor_data import SensorData, Measurement
+from lib.sensor.sensor_type.data import SensorData, Measurement
 
+logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
 
 class MetaDataAppender(threading.Thread):
 
@@ -19,23 +21,23 @@ class MetaDataAppender(threading.Thread):
         self.library = None
         self.room = None
         self.init_metadata(config)
+        logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
+        logger.info("Started {}".format(self.name))
         while not self.event.is_set():
             self.event.wait(2)
 
             while not self.input_queue.empty():
                 raw = self.input_queue.get()
-                print("raw data")
-                print(raw)
+                logger.info("Raw data received")
                 deserialized_data = json.loads(raw.replace("'", '"'))
-#                deserialized_data = pickle.loads(self.input_queue.get())
                 converted_data = self.convert(deserialized_data)
-                print("append data")
-                print(converted_data)
                 serialized_data = converted_data.to_json()
                 self.output_queue.put(serialized_data)
                 self.input_queue.task_done()
+                logger.info("Data put in queue: {}".format(serialized_data))
+        logger.info("Stopped: {}".format(self.name))
 
     def init_metadata(self, config):
         tmp = self.get_file_content(config["hostname_path"])
@@ -45,6 +47,7 @@ class MetaDataAppender(threading.Thread):
         location_info = self.get_file_content(config["location_info_path"])
         self.library = location_info[0].split("=")[1].split("\n")[0]
         self.room = location_info[1].split("=")[1].split("\n")[0]
+        logger.info("Metadata initialized: {}, {}, {}, {}".format(self.hostname, self.machine_id, self.library, self.room))
 
     def get_file_content(self, filepath):
         if os.path.isfile(filepath):
@@ -52,7 +55,7 @@ class MetaDataAppender(threading.Thread):
                 metadata = f.readlines()
             return metadata
         elif os.path.exists:
-            print("path exists but is not a file {}", filepath)
+            logger.error("File doesn't exist: {}".format(filepath))
         return None
 
     def convert(self, data):

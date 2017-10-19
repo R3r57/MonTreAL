@@ -1,8 +1,10 @@
+import os
 import gnsq
 import logging
 import threading
 from queue import Queue
 
+logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
 
 class NsqWriter (threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -19,38 +21,43 @@ class NsqWriter (threading.Thread):
         if ("writer" not in self.config["nsqd"]):
             self.config["nsqd"]["writer"] = { "timeout": 10,
                                               "max_tries": 10 }
+        logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
+        logger.info("Started {}".format(self.name))
         bLoop = True
         bError = False
         iCounter = 0
-        print("Starting " + self.name)
 
         while bLoop:
+            logger.info("Trying to connect to NSQ...")
             iCounter += 1
-            print("Connect to NSQ")
             try:
                 ping = (self.writer.ping()).decode()
                 if "OK" in ping:
                     bLoop = False
+                    logger.info("...success")
             except:
                 if iCounter >= 10:
                     bError = True
                     bLoop = False
+                    logger.info("...failed")
                 else:
-                    print("Can't connect to NSQ...\nRetrying...")
+                    logger.info("...retrying...")
                     self.event.wait(int(self.config["writer"]["timeout"]))
             if bError:
-                raise Exception("Couldn't reach NSQ")
+                logger.error("Could not connect to NSQ")
+                return
 
         while not self.event.is_set():
             self.event.wait(1)
             while not self.queue.empty():
+                logger.info("Getting data from queue...")
                 data = self.queue.get()
                 self.queue.task_done()
-                print("publish in nsq")
+                logger.info("...received and put into queue")
                 self.send(data)
-        print("Stopping ", self.name)
+        logger.info("Stopped {}".format(self.name))
 
     def send(self, data):
         self.writer.publish(self.config["topics"]["data_topic"], data)

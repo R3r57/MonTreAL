@@ -2,17 +2,15 @@ import logging
 import serial
 import json
 import threading
-from lib.sensor.sensor_data import Measurement
-
+from lib.sensor.sensor_type.data import Measurement
 
 class USBSerial:
-
+    
     def __init__(self, port, baudrate, timeout):
         self.info = {"class": "USBSerial"}
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
-        print("initialized")
 
     def read(self):
         try:
@@ -26,7 +24,6 @@ class USBSerial:
                     return data
                 print("nothing received")
         except serial.SerialException as e:
-            # anpassen
             raise
 
 

@@ -1,8 +1,11 @@
+import os
+import logging
 import threading
 import gnsq
 from multiprocessing import Queue
 from multiprocessing import Process
 
+logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
 
 class NsqReader (threading.Thread):
     def __init__(self, name, event, queue, config, channel="default"):
@@ -28,28 +31,31 @@ class NsqReader (threading.Thread):
 
         self.writer = gnsq.Nsqd(address=self.config["nsqd"]["name"],
                                 http_port=self.config["nsqd"]["port"])
+        logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
+        logger.info("Started: {}".format(self.name))
         server = Process(target=self.reader.start)
         try:
-            #create topic if it doesn't exist
-            print("Create topic if it doesn't exist")
+            logger.info("Creating topic (if not exists): {}".format(self.config["topics"]["data_topic"]))
             self.writer.create_topic(self.config["topics"]["data_topic"])
-            print("Starting " + self.name)
+            logger.info("Starting reader process...")
             server.start()
             self.event.wait(2)
-            print(self.name + " started")
+            logger.info("...success")
             while not self.event.is_set():
                 self.event.wait()
         except Exception as e:
-            print("Error! Shutting down\n", e)
+            logger.error("{}".format(e))
         finally:
             self.reader.close()
             self.reader.join(10)
             server.terminate()
             server.join(15)
+            logger.info("Stopped: {}".format(self.name))
 
     def message_handler(self, nsqr, message):
+        logger.info("NSQ message received")
         data = message.body.decode()
-        print("receive nsq message")
         self.queue.put(str(data))
+        logger.info("Data put into queue: {}".format(str(data)))
