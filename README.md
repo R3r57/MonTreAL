@@ -4,17 +4,19 @@
 
 **RPi (Sensor)**
 ```
-     USB (USB-WDE1)
-      |
-    Sensor (ASH2200)
-      |                           |
-      SocketWriter                |
-      |                           |
-     <|>                          |- NsqCli
-      |                           |
-      SocketReader                |- NsqAdmin
-      |                           |
-      MetaDataAppender            NsqLookup
-      |                           |
-      NsqWriter ----------------- Nsq
+                                     o- ...
+        USB                          |
+         |                           o- NsqReader
+       Sensor                        |
+         |                           o- NsqReader
+    SocketWriter                     |
+         |                           o- NsqReader
+        [|]                          |
+         |                           o- NsqAdmin, NsqCli, etc.
+    SocketReader                     |
+         |                           |\
+  MetaDataAppender                   | NsqLookup
+         |                           |/
+      NsqWriter ------------------- Nsq
+
 ```
