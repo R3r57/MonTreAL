@@ -1,7 +1,7 @@
 import os, gnsq, logging, threading
 from queue import Queue
 
-logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 class NsqWriter (threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -10,41 +10,41 @@ class NsqWriter (threading.Thread):
         self.config = config
         self.event = event
         self.queue = queue
-        if ("name" not in self.config["nsqd"]):
-            nsqd_ip = self.config["nsqd"]['ip']
-            self.config["nsqd"]["name"] = (nsqd_ip.split('://'))[1]
-        self.writer = gnsq.Nsqd(address=self.config["nsqd"]["name"],
-                                http_port=self.config["nsqd"]["port"])
-        if ("writer" not in self.config["nsqd"]):
-            self.config["nsqd"]["writer"] = { "timeout": 10,
-                                              "max_tries": 10 }
+        self.timeout = int(self.config["connection"]["timeout"])
+        self.max_tries = int(self.config["connection"]["max_tries"])
+
+        nsqlookup_url = "{}:{}".format(self.config["nsqlookupd"]["ip"],
+                self.config["nsqlookupd"]["port"])
+
+        self.writer = gnsq.Nsqd(address=self.config["nsqd"]["ip"],
+                http_port=self.config["nsqd"]["port"])
+
+        self.lookup = gnsq.Lookupd(address=nsqlookup_url)
+
         logger.info("{} initialized successfully".format(self.name))
+
+    def __check_connection(self):
+        counter = 1
+        while True:
+            logger.info("Trying to connect to NSQ ({}/{})".format(str(counter), str(self.max_tries)))
+            try:
+                ping_nsq = (self.writer.ping()).decode()
+                ping_lookup = (self.lookup.ping()).decode()
+                logger.info("NSQD [{}] - NSQLOOKUPD [{}]".format(ping_nsq, ping_lookup))
+                if "OK" in ping_nsq and "OK" in ping_lookup:
+                    return True
+            except Exception as e:
+                if counter < self.max_tries:
+                    counter += 1
+                    self.event.wait(self.timeout)
+                else:
+                    logger.error("NSQD or NSQLOOKUP not found")
+                    return False
 
     def run(self):
         logger.info("Started {}".format(self.name))
-        bLoop = True
-        bError = False
-        iCounter = 0
-
-        while bLoop:
-            logger.info("Trying to connect to NSQ...")
-            iCounter += 1
-            try:
-                ping = (self.writer.ping()).decode()
-                if "OK" in ping:
-                    bLoop = False
-                    logger.info("...success")
-            except:
-                if iCounter >= 10:
-                    bError = True
-                    bLoop = False
-                    logger.info("...failed")
-                else:
-                    logger.info("...retrying...")
-                    self.event.wait(int(self.config["writer"]["timeout"]))
-            if bError:
-                logger.error("Could not connect to NSQ")
-                return
+        if not self.__check_connection():
+           self.event.set()
 
         while not self.event.is_set():
             self.event.wait(1)
@@ -52,9 +52,10 @@ class NsqWriter (threading.Thread):
                 logger.info("Getting data from queue...")
                 data = self.queue.get()
                 self.queue.task_done()
-                logger.info("...received and put into queue")
                 self.send(data)
+                logger.info("...received and send to NSQ")
         logger.info("Stopped {}".format(self.name))
 
     def send(self, data):
-        self.writer.publish(self.config["topics"]["data_topic"], data)
+        if self.__check_connection():
+            self.writer.publish(self.config["topics"]["data_topic"], data)

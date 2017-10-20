@@ -2,7 +2,7 @@ import logging, threading, json, os
 from queue import Queue
 from lib.sensor.sensor_type.data import SensorData, Measurement
 
-logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 class MetaDataAppender(threading.Thread):
 

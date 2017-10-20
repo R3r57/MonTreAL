@@ -24,14 +24,12 @@
   },
   "nsq": {
     "nsqd": {
-      "ip": "http://nsqd",
-      "name": "nsqd",
+      "ip": "nsqd",
       "port": "4151",
       "timeout": 60
     },
     "nsqlookupd": {
-      "ip": "http://nsqlookupd",
-      "name": "nsqlookupd",
+      "ip": "nsqlookupd",
       "port": "4161",
       "interval": 300,
       "timeout": 60
@@ -39,8 +37,8 @@
     "topics": {
       "data_topic": "sensors"
     },
-    "writer":{
-      "timeout": 10,
+    "connection":{
+      "timeout": 2,
       "max_tries": 10
     }
   },

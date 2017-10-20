@@ -1,7 +1,7 @@
 import logging, threading, socket, sys, os, time
 from queue import Queue
 
-logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 class SocketReader (threading.Thread):
     def __init__(self, name, event, queue, server_address="0.0.0.0", server_port=4711):
@@ -12,7 +12,7 @@ class SocketReader (threading.Thread):
         self.server_port = server_port
         self.queue = queue
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(0.0)  # equals non-blocking
+        self.sock.settimeout(2)  # equals non-blocking
         logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
@@ -28,8 +28,7 @@ class SocketReader (threading.Thread):
         try:
             while not self.event.is_set():
                 try:
-                    logger.info('Waiting for incomming connections...')
-                    self.sock.settimeout(None)  # equals blocking
+                    logger.info('Waiting for incoming connections...')
                     connection, client_address = self.sock.accept()
                     if connection:
                         logger.info("Connection established")

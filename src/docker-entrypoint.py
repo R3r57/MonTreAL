@@ -10,22 +10,21 @@ from lib.socket.socket_writer import SocketWriter
 from lib.nsq.nsq_reader import NsqReader
 from lib.nsq.nsq_writer import NsqWriter
 
-from lib.prtg.web import PRTGweb
-from lib.prtg.memcached import Memcached
-from lib.prtg.converter import PRTGconverter
-from lib.prtg.sensor_overwatch import prtg_thread
-from lib.prtg.sensor_list import SensorList
-
-from lib.prtg.prtg import PRTG
-from lib.prtg.raw import RawMem
-
 from lib.sensor.sensor_type.sensor_mock import SensorMock
 from lib.sensor.sensor_type.ash2200 import ASH2200, USBSerial
 from lib.sensor.metadata_appender import MetaDataAppender
 from lib.sensor.local_container import LocalContainer
 
-logging.basicConfig(format="[%(class)s] %(asctime)s %(levelname)s: %(message)s", datefmt="%Y/%m/%d %H:%M:%S", level=logging.INFO)
-logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
+from lib.memcache.writer.raw import RawWriter
+
+logger = logging.getLogger("montreal")
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter("[%(class)s] %(asctime)s %(levelname)s: %(message)s", datefmt="%Y/%m/%d %H:%M:%S",)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+logger = logging.LoggerAdapter(logger, {"class": os.path.basename(__file__)})
 
 class MainProgram:
 
@@ -48,9 +47,9 @@ class MainProgram:
         if os.path.isfile(secretfile):
             with open(secretfile, "r") as secret_file:
                 data = json.load(secret_file)
-                logger.info("Sucessfully red config")
             return data
-        return None
+        else:
+            logger.error("Configuration file not found: {}".format(secretfile))
 
     def handle_signals(self, signum, stack):
         logger.info("Signal {} caught".format(signum))
@@ -85,14 +84,17 @@ class MainProgram:
             t.start()
 
     def __create_threads(self):
-        logger.info("Creating thread for {}".format(self.service_type))
+        logger.info("Creating threads for {}...".format(self.service_type))
 
-        if self.service_type == "localmanager":
+        if self.service_type == "local_manager":
             self.__create_local_manager()
             self.__create_local_container()
 
         elif self.service_type == "sensor":
-            self.__create_sensor(os.environ['TYPE'])
+            self.__create_sensors(os.environ['TYPE'])
+
+        elif self.service_type == "raw_memcache_writer":
+            self.__create_raw_memcache()
 
         # elif self.service_type == "prtgconvert":
         #     self.__create_prtgconvert()
@@ -116,27 +118,29 @@ class MainProgram:
 
     def run(self):
         self.__create_threads()
-        logger.info("Main loop event set: {}".format(str(self.event.is_set())))
         while not self.event.is_set():
-            restart = False
             self.event.wait(30)
             for t in self.threads:
                 if not t.isAlive():
-                    restart = True
+                    logger.error("Thread died: {}".format(t))
+                    self.__restart()
                     break
-            if restart:
-                self.__terminate_threads()
-                self.event.clear()
-                self.threads = []
-                self.__create_threads()
-        logger.info("Main loop event set on exit: {}".format(str(self.event.is_set())))
+
+    def __restart(self):
+            logger.info("Restarting {}".format(self.service_type))
+            self.__terminate_threads()
+            self.event.clear()
+            self.threads = []
+            self.__create_threads()
 
 
 ##################################################################################
 # Create Services                                                                #
 ##################################################################################
 
-#------- Local Sensor
+###########################################
+# Sensor -> NSQ                           #
+###########################################
     def __create_local_manager(self):
             message_queue = Queue(maxsize=10)
             socket = SocketReader("SocketReader",
@@ -167,7 +171,7 @@ class MainProgram:
                                         "sensors": self.config['sensors']})
             self.__register_thread(container)
 
-    def __create_sensor(self, type):
+    def __create_sensors(self, type):
             sensor_queue = Queue()
 
             if type == "ash2200":
@@ -188,7 +192,29 @@ class MainProgram:
                                   os.environ['SOCKET'])
             self.__register_thread(socket)
 
+###########################################
+# NSQ -> memcache (raw)                   #
+###########################################
+    def __create_raw_memcache(self):
+            queue = mpQueue(maxsize=10)
+            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, queue, self.config['nsq'], channel="memcache_raw")
+            self.__register_thread(nsq_reader)
 
+            raw_writer = RawWriter("Raw_Memcache_Writer", self.event, queue, self.config['memcached'])
+            self.__register_thread(raw_writer)
+
+
+    # def __create_rawjson(self):
+    #         update_queue = mpQueue(maxsize=10)
+    #         nsqR = NsqReader("NsqReader",
+    #                          self.event,
+    #                          update_queue,
+    #                          self.config["nsq"],
+    #                          channel="RawMem")
+    #         self.__register_thread(nsqR)
+
+    #         rawmem = RawMem("RAWMem", self.event, update_queue, self.config["memcached"])
+    #         self.__register_thread(rawmem)
 
     # def __create_prtgconvert(self):
     #         update_queue = mpQueue(maxsize=10)
@@ -247,7 +273,6 @@ class MainProgram:
 
     #         slist = SensorList("SensorList", self.event, update_queue)
     #         self.__register_thread(slist)
-
 
 if __name__ == '__main__':
     service_type = None

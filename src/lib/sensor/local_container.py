@@ -6,7 +6,7 @@ import os
 import base64
 import logging
 
-logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 class LocalContainer (threading.Thread):
     def __init__(self, name, event, config):

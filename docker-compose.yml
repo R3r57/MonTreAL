@@ -22,11 +22,11 @@ services:
     networks:
       backend:
 
-  #memcached:
-  #  image: memcached:latest
-  #  command: memcached -vv
-  #  networks:
-  #    backend:
+  memcached:
+    image: memcached:latest
+    command: memcached -vv
+    networks:
+      backend:
 
   nsqadmin:
     image: nsqio/nsq:latest
@@ -41,9 +41,12 @@ services:
     command: ["nsq_tail","-lookupd-http-address","nsqlookupd:4161","-topic","sensors"]
     networks:
       backend:
+    deploy:
+        restart_policy:
+            condition: on-failure
 
 #################################################
-  localmanager:
+  local_manager:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
@@ -58,8 +61,23 @@ services:
     tty: true
     environment:
       CONFIG: ./montreal.json
-      SERVICE: "localmanager"
+      SERVICE: "local_manager"
 
+#################################################
+  raw_memcache_writer:
+    build:
+      context: ./
+      dockerfile: Dockerfile.amd64
+    image: montreal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./montreal.json:/app/montreal.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./montreal.json
+      SERVICE: "raw_memcache_writer"
 #################################################
   #web:
   #  build:

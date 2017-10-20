@@ -5,7 +5,7 @@ import sys
 import os
 from queue import Queue
 
-logger = logging.LoggerAdapter(logging.getLogger(), {"class": os.path.basename(__file__)})
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 class SocketWriter (threading.Thread):
     def __init__(self, name, event, queue, server_address="127.0.0.1", server_port=4711):
