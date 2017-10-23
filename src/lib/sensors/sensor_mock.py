@@ -1,5 +1,5 @@
 import logging, os, threading, json
-from lib.sensor.sensor_type.data import Measurement
+from lib.sensors.data import Measurement
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -10,7 +10,7 @@ class SensorMock (threading.Thread):
         self.event = event
         self.queue = queue
         logger.info("{} initialized successfully".format(self.name))
-        
+
     def run(self):
         logger.info("Started: {}".format(self.name))
         sensor_id = 1

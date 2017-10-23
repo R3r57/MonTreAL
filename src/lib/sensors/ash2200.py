@@ -1,11 +1,8 @@
-import logging
-import serial
-import json
-import threading
-from lib.sensor.sensor_type.data import Measurement
+import logging, serial, json, threading
+from lib.sensors.data import Measurement
 
 class USBSerial:
-    
+
     def __init__(self, port, baudrate, timeout):
         self.info = {"class": "USBSerial"}
         self.port = port
