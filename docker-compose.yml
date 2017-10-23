@@ -53,9 +53,9 @@ services:
     image: montreal
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./location.info:/etc/location.info
-      - ./pi-hostname:/etc/pi-hostname
-      - ./montreal.json:/app/montreal.json
+      - ./config/location.info:/etc/location.info
+      - ./config/pi-hostname:/etc/pi-hostname
+      - ./config/montreal.json:/app/montreal.json
     networks:
       backend:
     tty: true
@@ -71,7 +71,7 @@ services:
     image: montreal
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./montreal.json:/app/montreal.json
+      - ./config/montreal.json:/app/montreal.json
     networks:
       backend:
     tty: true
