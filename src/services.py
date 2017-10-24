@@ -62,7 +62,7 @@ class Services:
                 ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
                 threads.append(usb_serial, ash2200)
             elif type == "mock":
-                mock = SensorMock("Mock", self.event, sensor_queue)
+                mock = SensorMock("Mock", self.event, sensor_queue, self.config['mock'])
                 threads.append(mock)
             else:
                 logger.error("No sensortype selected: {}".format(type))

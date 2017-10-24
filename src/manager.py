@@ -39,14 +39,16 @@ class Manager:
 
     def __get_config(self):
         logger.info("Getting configuration...")
-        secretfile = os.environ['CONFIG']
-        logger.info("Configuration file set to {}".format(secretfile))
-        if os.path.isfile(secretfile):
-            with open(secretfile, "r") as secret_file:
-                data = json.load(secret_file)
-            return data
+        configuration = os.environ['CONFIG']
+        if os.path.isfile(configuration):
+            with open(configuration, "r") as file:
+                data = json.load(file)
+                logger.info("Configuration got from file: {}".format(configuration))
+                return data
         else:
-            logger.error("Configuration file not found: {}".format(secretfile))
+            data = json.loads(configuration.replace("\'", "\""))
+            logger.info("Configuration got from environment: {}".format(configuration))
+            return data
 
     def __create_threads(self):
         logger.info("Creating threads for {}...".format(self.service_type))

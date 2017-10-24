@@ -3,15 +3,16 @@
     "mock": {
       "sensor_count": 5,
       "temperature": 25.0,
-      "humidity": 62.0
+      "humidity": 62.0,
+      "interval": 50
     },
     "ash2200": {
       "ids": "",
       "device": "/dev/ttyUSB0",
       "baudrate": "9600",
-      "timeout": "200"
-    },
-    "interval": 120
+      "timeout": 200,
+      "interval": 200
+    }
   },
   "utilities": {
     "logging": {

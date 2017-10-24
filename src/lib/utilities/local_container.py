@@ -30,18 +30,12 @@ class LocalContainer (threading.Thread):
             myip = s.getsockname()[0]
         return myip
 
-    def __b64_enc(self, data):
-        return base64.encodebytes(json.dumps(data).encode())
-
-    def __b64_dec(self, data):
-        return json.loads(base64.decodebytes(data).decode())
-
     def __create_container(self):
         logger.info("Creating container...")
         image = self.config["local"]["image"]
         label = self.config["local"]['label']
         environment = self.config["local"]["environment"]
-        environment.update({"CONFIG": "{}".format(self.__b64_enc(self.config["sensors"]))})
+        environment.update({"CONFIG": "{}".format(self.config["sensors"])})
         environment.update({"SOCKET": "{}".format(self.__get_ip_address(), 4711)})
 
         try:
