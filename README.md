@@ -6,11 +6,11 @@
 ```
                                      o- ...
         USB                          |
-         |                           o- NsqReader
+         |                           o- NsqReader - ...
        Sensor                        |
-         |                           o- NsqReader
+         |                           o- NsqReader - ...
     SocketWriter                     |
-         |                           o- NsqReader
+         |                           o- NsqReader - RawMemcacheWriter
         [|]                          |
          |                           o- NsqAdmin, NsqCli, etc.
     SocketReader                     |
