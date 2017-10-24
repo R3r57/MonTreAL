@@ -1,5 +1,10 @@
 {
   "sensors": {
+    "mock": {
+      "sensor_count": 5,
+      "temperature": 25.0,
+      "humidity": 62.0
+    },
     "ash2200": {
       "ids": "",
       "device": "/dev/ttyUSB0",
@@ -24,9 +29,7 @@
       }
     },
     "metadata": {
-      "hostname_path": "/etc/pi-hostname",
-      "machine_id_path": "/etc/machine-id",
-      "location_info_path": "/etc/location.info"
+      "local_configuration": "./local_configuration.json"
     }
   },
   "interfaces": {
