@@ -15,12 +15,11 @@ class USBSerial:
             with serial.Serial(port=self.port,
                                baudrate=self.baudrate,
                                timeout=self.timeout) as usb:
-                print("connected to {}: waiting...".format(self.port))
+                logger.info("Connected to {}: waiting...".format(self.port))
                 data = usb.readline().decode().strip()
                 if data:
-                    print("data received: {}".format(data))
+                    logger.info("Data received: {}".format(data))
                     return data
-                print("nothing received")
         except serial.SerialException as e:
             raise
 
@@ -33,10 +32,10 @@ class ASH2200(threading.Thread):
         self.usb_serial = usb_serial
         self.queue = queue
         self.event = event
-        print("initialized")
+        logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
-        print("starting...")
+        logger.info("Started: {}".format(self.name))
         while not self.event.is_set():
             try:
                 logger.info("Waiting for data from usb...")
@@ -45,11 +44,10 @@ class ASH2200(threading.Thread):
                     converted_data = self.convert(data)
                     for item in converted_data:
                         self.queue.put(json.dumps(item))
-                        print("message {}", item)
-                        print("data put into queue")
+                        logger.info("Data put into queue")
             except Exception:
                 raise
-        print("Stopped")
+        logger.info("Stopped: {}".format(self.name))
 
     def convert(self, string):
         data = []
@@ -59,5 +57,5 @@ class ASH2200(threading.Thread):
             hum = splitted[(id + 10)].replace(",", ".")
             if temp and hum:
                 data.append(Measurement(id, temp, hum).to_json())
-        print("data converted: {}".format([e for e in data]))
+        logger.info("data converted: {}".format([e for e in data]))
         return data
