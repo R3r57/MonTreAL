@@ -37,13 +37,13 @@ class Services:
             threads.append(socket_reader)
 
             meta_queue = Queue(maxsize=10)
-            meta_data_appender = MetaDataAppender("MetaData", self.event, message_queue, meta_queue, self.config['metadata'])
+            meta_data_appender = MetaDataAppender("MetaData", self.event, message_queue, meta_queue, self.config['utilities']['metadata'])
             threads.append(meta_data_appender)
 
-            nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config["nsq"])
+            nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['interfaces']['nsq'])
             threads.append(nsq_writer)
 
-            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['local'], "sensors": self.config['sensors']})
+            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors']})
             threads.append(local_container)
 
             return threads
@@ -79,10 +79,10 @@ class Services:
             threads = []
 
             queue = Queue(maxsize=10)
-            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, queue, self.config['nsq'], channel="memcache_raw")
+            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, queue, self.config['interfaces']['nsq'], channel="memcache_raw")
             threads.append(nsq_reader)
 
-            raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, queue, self.config['memcached'])
+            raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, queue, self.config['interfaces']['memcached'])
             threads.append(raw_memcache_writer)
 
             return threads

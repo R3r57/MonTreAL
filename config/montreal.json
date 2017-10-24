@@ -1,18 +1,4 @@
 {
-  "local": {
-    "label": "local-container",
-    "image": "montreal",
-    "network_name": "montreal_backend",
-    "environment": {
-      "SERVICE": "sensor",
-      "TYPE": "mock"
-    }
-  },
-  "metadata": {
-    "hostname_path": "/etc/pi-hostname",
-    "machine_id_path": "/etc/machine-id",
-    "location_info_path": "/etc/location.info"
-  },
   "sensors": {
     "ash2200": {
       "ids": "",
@@ -22,37 +8,55 @@
     },
     "interval": 120
   },
-  "nsq": {
-    "nsqd": {
-      "ip": "nsqd",
-      "port": "4151",
-      "timeout": 60
+  "utilities": {
+    "logging": {
+      "level": "debug",
+      "file": "",
+      "format": "[%(asctime)s] %(levelname)-8s %(message)s"
     },
-    "nsqlookupd": {
-      "ip": "nsqlookupd",
-      "port": "4161",
-      "interval": 300,
-      "timeout": 60
+    "local": {
+      "label": "local-container",
+      "image": "montreal",
+      "network_name": "montreal_backend",
+      "environment": {
+        "SERVICE": "sensor",
+        "TYPE": "mock"
+      }
     },
-    "topics": {
-      "data_topic": "sensors"
-    },
-    "connection":{
-      "timeout": 2,
-      "max_tries": 10
+    "metadata": {
+      "hostname_path": "/etc/pi-hostname",
+      "machine_id_path": "/etc/machine-id",
+      "location_info_path": "/etc/location.info"
     }
   },
-  "memcached": {
-    "ip": "memcached",
-    "port": 11211,
-    "connect_timeout": 180,
-    "timeout": 180,
-    "key_expiration": 180,
-    "noreply_flag": true
-  },
-  "logging": {
-    "level": "debug",
-    "file": "",
-    "format": "[%(asctime)s] %(levelname)-8s %(message)s"
+  "interfaces": {
+    "nsq": {
+      "nsqd": {
+        "ip": "nsqd",
+        "port": "4151",
+        "timeout": 60
+      },
+      "nsqlookupd": {
+        "ip": "nsqlookupd",
+        "port": "4161",
+        "interval": 300,
+        "timeout": 60
+      },
+      "topics": {
+        "data_topic": "sensors"
+      },
+      "connection":{
+        "timeout": 2,
+        "max_tries": 10
+      }
+    },
+    "memcached": {
+      "ip": "memcached",
+      "port": 11211,
+      "connect_timeout": 180,
+      "timeout": 180,
+      "key_expiration": 180,
+      "noreply_flag": true
+    }
   }
 }

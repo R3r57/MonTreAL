@@ -68,7 +68,6 @@ class Manager:
     def __terminate_threads(self):
         logger.info("Terminating...")
         self.event.set()
-        # time.sleep(2)
         start = datetime.datetime.now()
         while not len(self.threads) == 0:
             for t in self.threads:
