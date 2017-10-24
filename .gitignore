@@ -2,5 +2,4 @@
 .env
 *.pyc
 __pycache/
-pi-hostname
-location.info
+deprecated/
