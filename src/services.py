@@ -1,13 +1,5 @@
 import os, logging
-from lib.sensors.ash2200 import ASH2200
-from lib.sensors.sensor_mock import SensorMock
-from lib.interfaces.socket.socket_writer import SocketWriter
-from lib.interfaces.socket.socket_reader import SocketReader
-from lib.interfaces.nsq.nsq_writer import NsqWriter
 from lib.interfaces.nsq.nsq_reader import NsqReader
-from lib.interfaces.memcache.writer.raw import RawWriter
-from lib.utilities.metadata_appender import MetaDataAppender
-from lib.utilities.local_container import LocalContainer
 from queue import Queue
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
@@ -30,6 +22,10 @@ class Services:
 # Local Manager                                                  #
 ##################################################################
     def __create_local_manager(self):
+            from lib.interfaces.socket.socket_reader import SocketReader
+            from lib.utilities.metadata_appender import MetaDataAppender
+            from lib.utilities.local_container import LocalContainer
+            from lib.interfaces.nsq.nsq_writer import NsqWriter
             threads = []
 
             message_queue = Queue(maxsize=10)
@@ -52,16 +48,19 @@ class Services:
 # Local Sensor                                                   #
 ##################################################################
     def __create_sensors(self):
+            from lib.interfaces.socket.socket_writer import SocketWriter
             threads = []
             type = os.environ['TYPE']
 
             sensor_queue = Queue()
 
             if type == "ash2200":
-                usb_serial = USBSerial("/dev/ttyUSB-1", 9599, 19)
+                from lib.sensors.ash2200 import ASH2200, USBSerial
+                usb_serial = USBSerial(self.config['ash2200'])
                 ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
-                threads.append(usb_serial, ash2200)
+                threads.append(ash2200)
             elif type == "mock":
+                from lib.sensors.sensor_mock import SensorMock
                 mock = SensorMock("Mock", self.event, sensor_queue, self.config['mock'])
                 threads.append(mock)
             else:
@@ -76,6 +75,7 @@ class Services:
 # Raw Memcache                                                   #
 ##################################################################
     def __create_raw_memcache(self):
+            from lib.interfaces.memcache.writer.raw import RawWriter
             threads = []
 
             queue = Queue(maxsize=10)

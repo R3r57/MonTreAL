@@ -49,6 +49,7 @@ class LocalContainer (threading.Thread):
 
         self.container = self.dcli.containers.create(image,
                                                      command=command,
+                                                     name = "sensor",
                                                      tty=True,
                                                      devices=device,
                                                      environment=environment,

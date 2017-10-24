@@ -10,8 +10,7 @@
       "ids": "",
       "device": "/dev/ttyUSB0",
       "baudrate": "9600",
-      "timeout": 200,
-      "interval": 200
+      "timeout": 200
     }
   },
   "utilities": {
@@ -24,9 +23,10 @@
       "label": "local-container",
       "image": "montreal",
       "network_name": "montreal_backend",
+      "device": "/dev/ttyUSB0",
       "environment": {
         "SERVICE": "sensor",
-        "TYPE": "mock"
+        "TYPE": "ash2200"
       }
     },
     "metadata": {

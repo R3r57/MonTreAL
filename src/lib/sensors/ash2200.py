@@ -1,13 +1,14 @@
-import logging, serial, json, threading
+import logging, serial, json, threading, os
 from lib.sensors.data import Measurement
+
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 class USBSerial:
 
-    def __init__(self, port, baudrate, timeout):
-        self.info = {"class": "USBSerial"}
-        self.port = port
-        self.baudrate = baudrate
-        self.timeout = timeout
+    def __init__(self, config):
+        self.port = config['device']
+        self.baudrate = config['baudrate']
+        self.timeout = config['timeout']
 
     def read(self):
         try:
@@ -28,7 +29,6 @@ class ASH2200(threading.Thread):
 
     def __init__(self, name, usb_serial, event, queue):
         threading.Thread.__init__(self)
-        self.info = {"class": "ASH2200"}
         self.name = name
         self.usb_serial = usb_serial
         self.queue = queue
@@ -38,14 +38,17 @@ class ASH2200(threading.Thread):
     def run(self):
         print("starting...")
         while not self.event.is_set():
-            print("waiting for data from usb...")
-            data = self.usb_serial.read()
-            if data:
-                converted_data = self.convert(data)
-                for item in converted_data:
-                    self.queue.put(json.dumps(item))
-                    print("message {}", item)
-                print("data put into queue")
+            try:
+                logger.info("Waiting for data from usb...")
+                data = self.usb_serial.read()
+                if data:
+                    converted_data = self.convert(data)
+                    for item in converted_data:
+                        self.queue.put(json.dumps(item))
+                        print("message {}", item)
+                        print("data put into queue")
+            except Exception:
+                raise
         print("Stopped")
 
     def convert(self, string):
