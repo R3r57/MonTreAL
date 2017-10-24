@@ -1,0 +1,66 @@
+{
+  "sensors": {
+    "mock": {
+      "sensor_count": 5,
+      "temperature": 25.0,
+      "humidity": 62.0,
+      "interval": 50
+    },
+    "ash2200": {
+      "ids": "",
+      "device": "/dev/ttyUSB0",
+      "baudrate": "9600",
+      "timeout": 200
+    }
+  },
+  "utilities": {
+    "logging": {
+      "level": "debug",
+      "file": "",
+      "format": "[%(asctime)s] %(levelname)-8s %(message)s"
+    },
+    "local": {
+      "label": "local-container",
+      "image": "montreal",
+      "network_name": "montreal_backend",
+      "device": "/dev/ttyUSB0",
+      "environment": {
+        "SERVICE": "sensor",
+        "TYPE": "ash2200"
+      }
+    },
+    "metadata": {
+      "local_configuration": "./local_configuration.json"
+    }
+  },
+  "interfaces": {
+    "nsq": {
+      "nsqd": {
+        "ip": "nsqd",
+        "port": "4151",
+        "timeout": 60
+      },
+      "nsqlookupd": {
+        "ip": "nsqlookupd",
+        "port": "4161",
+        "interval": 300,
+        "timeout": 60
+      },
+      "topics": {
+        "data_topic": "sensors"
+      },
+      "connection":{
+        "timeout": 2,
+        "max_tries": 10
+      }
+    },
+    "memcached": {
+      "ip": "memcached",
+      "port": 11211,
+      "connect_timeout": 180,
+      "timeout": 180,
+      "key_expiration": 180,
+      "noreply_flag": true
+    }
+  }
+}

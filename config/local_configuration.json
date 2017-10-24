@@ -1,0 +1,6 @@
+{
+  "hostname": "/etc/hostname",
+  "machine_id": "123456789",
+  "building": "L9",
+  "room": "Wohnzimmer"
+}

@@ -1,15 +1,12 @@
-import json
-from pymemcache.client.base import Client
+import json, logging, os
+from pymemcache.client.base import Client as PymemcacheClient
 
+logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class Memcached:
+class Client:
     def __init__(self, config):
         self.config = config
-        self.memcache_client = Client((self.config["ip"], self.config["port"]),
-                                      serializer=self.json_serializer,
-                                      deserializer=self.json_deserializer,
-                                      connect_timeout=self.config["connect_timeout"],
-                                      timeout=self.config["timeout"])
+        self.memcache_client = PymemcacheClient(server=(self.config["ip"], self.config["port"]), serializer=self.json_serializer, deserializer=self.json_deserializer, connect_timeout=self.config["connect_timeout"], timeout=self.config["timeout"])
 
     def json_serializer(self, key, value):
         if type(value) == str:
@@ -24,12 +21,12 @@ class Memcached:
         raise Exception("Unknown serialization format")
 
     def write(self, key, message):
-        print("write to cache: {}".format(key))
+        logger.info("Writing to cache: {}".format(key))
         self.memcache_client.set(key,
                                  message,
                                  expire=self.config["key_expiration"],
                                  noreply=self.config["noreply_flag"])
 
     def read(self, key):
-        print("read from cache: {}".format(key))
+        logger.info("Reading from cache: {}".format(key))
         return self.memcache_client.get(key)

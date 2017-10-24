@@ -6,15 +6,14 @@ WORKDIR /app
 RUN apt update && \
     apt install -qqy gcc
 
-COPY src/requirements.txt /app/requirements.txt
+COPY requirements.txt /app/requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY src /app/
-RUN chmod +x /app/docker-entrypoint.py
+RUN chmod +x /app/manager.py
 
-ENTRYPOINT ["/app/docker-entrypoint.py"]
+ENTRYPOINT ["/app/manager.py"]
 
-# Add metadata
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
