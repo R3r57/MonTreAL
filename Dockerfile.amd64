@@ -1,19 +1,15 @@
-#FROM arm32v7/python:3.6.2-slim
-#COPY src/qemu-arm-static /usr/bin/
-
 FROM python:3.6.2-slim
 
 WORKDIR /app
 
-COPY src/requirements.txt /app/requirements.txt
+COPY requirements.txt /app/requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY src /app/
-RUN chmod +x /app/docker-entrypoint.py
+RUN chmod +x /app/manager.py
 
-ENTRYPOINT ["/app/docker-entrypoint.py"]
+ENTRYPOINT ["/app/manager.py"]
 
-# Add metadata
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION

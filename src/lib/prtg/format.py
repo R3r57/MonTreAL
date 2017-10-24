@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-
 import json
 
-
-class PRTG:
+class PRTGFormat:
 
     def __init__(self):
         self.data = {"prtg": {"text": "", "result": []}}
@@ -25,10 +23,3 @@ class PRTG:
 
     def print_json(self):
         print(json.dumps(self.data, indent=2))
-
-
-if __name__ == '__main__':
-    paessler = prtg()
-    paessler.set_text("Hello World")
-    paessler.add_channel("humidity", 50, "percent")
-    paessler.print_json()
