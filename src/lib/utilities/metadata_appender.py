@@ -14,7 +14,7 @@ class MetaDataAppender(threading.Thread):
         self.output_queue = output_queue
         self.hostname = None
         self.machine_id = None
-        self.library = None
+        self.building = None
         self.room = None
         self.__init_metadata(config)
         logger.info("{} initialized successfully".format(self.name))
@@ -41,9 +41,9 @@ class MetaDataAppender(threading.Thread):
         tmp2 = self.__get_file_content(config["machine_id_path"])
         self.machine_id = tmp2[0].split("\n")[0]
         location_info = self.__get_file_content(config["location_info_path"])
-        self.library = location_info[0].split("=")[1].split("\n")[0]
+        self.building = location_info[0].split("=")[1].split("\n")[0]
         self.room = location_info[1].split("=")[1].split("\n")[0]
-        logger.info("Configuration: {}, {}, {}, {}".format(self.hostname, self.machine_id, self.library, self.room))
+        logger.info("Configuration: {}, {}, {}, {}".format(self.hostname, self.machine_id, self.building, self.room))
 
     def __get_file_content(self, filepath):
         if os.path.isfile(filepath):
@@ -57,5 +57,6 @@ class MetaDataAppender(threading.Thread):
     def __convert(self, data):
         return SensorData(self.hostname,
                           self.machine_id,
+                          self.building,
                           self.room,
-                          self.library, data)
+                          data)
