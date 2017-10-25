@@ -50,7 +50,6 @@ class NsqWriter (threading.Thread):
             self.event.wait(1)
             while not self.queue.empty():
                 data = self.queue.get()
-                self.queue.task_done()
                 self.__send(data)
                 logger.info("Received data from queue and put into NSQ")
         logger.info("Stopped {}".format(self.name))

@@ -39,7 +39,10 @@ class LocalContainer (threading.Thread):
         environment.update({"SOCKET": "{}".format(self.__get_ip_address(), 4711)})
 
         try:
-            device = [self.config["local"]["device"] + ":" + self.config["local"]["device"]]
+            if self.config["local"]["device"]:
+                device = [self.config["local"]["device"] + ":" + self.config["local"]["device"]]
+            else:
+                device = []
         except KeyError:
             device = []
         try:

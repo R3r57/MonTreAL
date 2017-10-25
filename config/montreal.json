@@ -23,10 +23,10 @@
       "label": "local-container",
       "image": "montreal",
       "network_name": "montreal_backend",
-      "device": "/dev/ttyUSB0",
+      "device": "",
       "environment": {
         "SERVICE": "sensor",
-        "TYPE": "ash2200"
+        "TYPE": "mock"
       }
     },
     "metadata": {

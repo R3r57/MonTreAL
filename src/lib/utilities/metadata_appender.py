@@ -31,7 +31,6 @@ class MetaDataAppender(threading.Thread):
                 converted_data = self.__convert(deserialized_data)
                 serialized_data = converted_data.to_json()
                 self.output_queue.put(serialized_data)
-                self.input_queue.task_done()
                 logger.info("Data put in queue")
         logger.info("Stopped: {}".format(self.name))
 

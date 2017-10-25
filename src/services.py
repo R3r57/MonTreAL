@@ -1,6 +1,6 @@
 import os, logging
 from lib.interfaces.nsq.nsq_reader import NsqReader
-from queue import Queue
+from multiprocessing import Queue
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -52,7 +52,7 @@ class Services:
             threads = []
             type = os.environ['TYPE']
 
-            sensor_queue = Queue()
+            sensor_queue = Queue(maxsize=10)
 
             if type == "ash2200":
                 from lib.sensors.ash2200 import ASH2200, USBSerial
@@ -78,11 +78,12 @@ class Services:
             from lib.interfaces.memcache.writer.raw import RawWriter
             threads = []
 
-            queue = Queue(maxsize=10)
-            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, queue, self.config['interfaces']['nsq'], channel="memcache_raw")
+            raw_queue = Queue(maxsize=10)
+
+            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, raw_queue, self.config['interfaces']['nsq'], channel="memcache_raw")
             threads.append(nsq_reader)
 
-            raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, queue, self.config['interfaces']['memcached'])
+            raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, raw_queue, self.config['interfaces']['memcached'])
             threads.append(raw_memcache_writer)
 
             return threads

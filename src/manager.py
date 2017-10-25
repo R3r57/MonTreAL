@@ -72,8 +72,8 @@ class Manager:
         self.event.set()
         start = datetime.datetime.now()
         while not len(self.threads) == 0:
+            counter = 1
             for t in self.threads:
-                counter = 1
                 t.join(timeout=2)
                 logger.info("Joining {} (attempt: {})".format(t.name, counter))
                 counter += 1

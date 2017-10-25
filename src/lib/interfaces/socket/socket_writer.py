@@ -30,7 +30,6 @@ class SocketWriter (threading.Thread):
                 while not self.queue.empty():
                     data = self.queue.get()
                     self.__send(data)
-                    self.queue.task_done()
                     logger.info("Wrote data to socket")
         finally:
             logger.info("Stopped: {}".format(self.name))
