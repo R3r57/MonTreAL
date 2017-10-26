@@ -101,7 +101,7 @@ class Services:
             nsq_reader = NsqReader("InfluxDB_NsqReader", self.event, influxdb_queue, self.config['interfaces']['nsq'], channel="influxdb")
             threads.append(nsq_reader)
 
-            influxdb_writer = InfluxDBWriter("InfluxDB_Writer", self.event, influxdb_queue, self.config['interfaces']['memcached'])
+            influxdb_writer = InfluxDBWriter("InfluxDB_Writer", self.event, influxdb_queue, self.config['interfaces']['influxdb'])
             threads.append(influxdb_writer)
 
             return threads
