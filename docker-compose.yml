@@ -22,12 +22,6 @@ services:
     networks:
       backend:
 
-  memcached:
-    image: memcached:latest
-    command: memcached -vv
-    networks:
-      backend:
-
   nsqadmin:
     image: nsqio/nsq:latest
     entrypoint: ["nsqadmin", "--lookupd-http-address=nsqlookupd:4161"]
@@ -44,6 +38,32 @@ services:
     deploy:
         restart_policy:
             condition: on-failure
+
+  memcached:
+    image: memcached:latest
+    command: memcached -vv
+    networks:
+      backend:
+
+  influxdb:
+    image: influxdb:latest
+    networks:
+      backend:
+
+  chronograf:
+    image: chronograf:latest
+    command: chronograf --influxdb-url=http://influxdb:8086
+    networks:
+      backend:
+    ports:
+      - "8888:8888"
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      backend:
+    ports:
+      - "3000:3000"
 
 #################################################
   local_manager:
@@ -63,7 +83,23 @@ services:
       SERVICE: "local_manager"
 
 #################################################
-  raw_memcache_writer:
+  # raw_memcache_writer:
+  #   build:
+  #     context: ./
+  #     dockerfile: Dockerfile.amd64
+  #   image: montreal
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./config/montreal.json:/app/montreal.json
+  #   networks:
+  #     backend:
+  #   tty: true
+  #   environment:
+  #     CONFIG: ./montreal.json
+  #     SERVICE: "raw_memcache_writer"
+
+#################################################
+  influxdb_writer:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
@@ -76,63 +112,4 @@ services:
     tty: true
     environment:
       CONFIG: ./montreal.json
-      SERVICE: "raw_memcache_writer"
-#################################################
-  #web:
-  #  build:
-  #    context: ./
-  #    dockerfile: Dockerfile.amd64
-  #  image: montreal
-  #  networks:
-  #    backend:
-  #  tty: true
-  #  ports:
-  #    - "5000:5000"
-  #  environment:
-  #    SERVICE: "prtgweb"
-
-#################################################
-  #prtg:
-  #  build:
-  #    context: ./
-  #    dockerfile: Dockerfile.amd64
-  #  image: montreal
-  #  networks:
-  #    backend:
-  #  tty: true
-  #  environment:
-  #    SERVICE: "prtgconvert"
-
-  #json:
-  #  build:
-  #    context: ./
-  #    dockerfile: Dockerfile.amd64
-  #  image: montreal
-  #  networks:
-  #    backend:
-  #  tty: true
-  #  environment:
-  #    SERVICE: "rawjson"
-
-#################################################
-  #prtgregister:
-  #  build:
-  #    context: ./
-  #    dockerfile: Dockerfile.amd64
-  #  image: montreal
-  #  networks:
-  #    backend:
-  #  tty: true
-  #  environment:
-  #    SERVICE: "prtgregister"
-
-  #list:
-  #  build:
-  #    context: ./
-  #    dockerfile: Dockerfile.amd64
-  #  image: montreal
-  #  networks:
-  #    backend:
-  #  tty: true
-  #  environment:
-  #    SERVICE: "sensorlist"
+      SERVICE: "influxdb_writer"

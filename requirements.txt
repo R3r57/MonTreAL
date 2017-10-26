@@ -5,3 +5,4 @@ pyserial
 flask
 flask-restful
 pymemcache
+influxdb
