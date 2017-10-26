@@ -2,8 +2,8 @@ import json
 
 class Measurement:
     def __init__(self, id, temp, hum):
-        temperature = {"name": "temperature", "value": temp, "unit": "°C"}
-        humidity = {"name": "humidity", "value": hum, "unit": "%"}
+        temperature = {"name": "temperature", "value": float(temp), "unit": "°C"}
+        humidity = {"name": "humidity", "value": float(hum), "unit": "%"}
         measurements = [temperature, humidity]
         self.data = {"sensor_id": id, "measurements": measurements}
 
