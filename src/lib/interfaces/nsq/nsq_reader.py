@@ -56,12 +56,11 @@ class NsqReader (threading.Thread):
                 self.event.set()
             else:
                 self.writer.create_topic(self.config["topics"]["data_topic"])
-                self.event.wait(2)
             while not self.event.is_set():
                 if not process.is_alive():
                     logger.info("Subprocess for reader not alive...starting")
                     process.start()
-                self.event.wait()
+                self.event.wait(2)
         except Exception as e:
             logger.error("{}".format(e))
         finally:
