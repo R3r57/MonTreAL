@@ -61,6 +61,14 @@
       "timeout": 180,
       "key_expiration": 180,
       "noreply_flag": true
+    },
+    "influxdb": {
+      "ip": "influxdb",
+      "port": 8086,
+      "user": "root",
+      "password": "root",
+      "database": "montreal",
+      "measurements": "Temperature & Humidity"
     }
   }
 }

@@ -50,10 +50,14 @@ class NsqWriter (threading.Thread):
             self.event.wait(1)
             while not self.queue.empty():
                 data = self.queue.get()
-                self.__send(data)
-                logger.info("Received data from queue and put into NSQ")
+                if self.__send(data):
+                    logger.info("Received data from queue and put into NSQ")
+                else:
+                    logger.error("Unable to send data to NSQ")
         logger.info("Stopped {}".format(self.name))
 
     def __send(self, data):
         if self.__check_connection():
             self.writer.publish(self.config["topics"]["data_topic"], data)
+            return True
+        return False

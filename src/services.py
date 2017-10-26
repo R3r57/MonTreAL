@@ -12,7 +12,8 @@ class Services:
         self.services = {
             "sensor": self.__create_sensors,
             "local_manager": self.__create_local_manager,
-            "raw_memcache_writer": self.__create_raw_memcache
+            "raw_memcache_writer": self.__create_raw_memcache,
+            "influxdb_writer": self.__create_influxdb
         }
 
     def get_services(self, type):
@@ -85,5 +86,22 @@ class Services:
 
             raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, raw_queue, self.config['interfaces']['memcached'])
             threads.append(raw_memcache_writer)
+
+            return threads
+
+##################################################################
+# InfluxDB Writer                                                #
+##################################################################
+    def __create_influxdb(self):
+            from lib.interfaces.influxdb.influxdb_writer import InfluxDBWriter
+            threads = []
+
+            influxdb_queue = Queue(maxsize=10)
+
+            nsq_reader = NsqReader("InfluxDB_NsqReader", self.event, influxdb_queue, self.config['interfaces']['nsq'], channel="influxdb")
+            threads.append(nsq_reader)
+
+            influxdb_writer = InfluxDBWriter("InfluxDB_Writer", self.event, influxdb_queue, self.config['interfaces']['influxdb'])
+            threads.append(influxdb_writer)
 
             return threads
