@@ -58,6 +58,13 @@ services:
     ports:
       - "8888:8888"
 
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      backend:
+    ports:
+      - "3000:3000"
+
 #################################################
   local_manager:
     build:
