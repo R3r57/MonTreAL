@@ -3,7 +3,7 @@ import threading, json, logging, os
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class RawWriter (threading.Thread):
+class JSONWriter (threading.Thread):
     def __init__(self, name, event, queue, config, prefix="json"):
         threading.Thread.__init__(self)
         self.name = name
@@ -19,8 +19,7 @@ class RawWriter (threading.Thread):
             self.event.wait(2)
             while not self.queue.empty():
                 data = json.loads(self.queue.get().replace("'", '"'))
-                keyvalue = "{}{}_{}{}".format(self.prefix,
-                                              data["hostname"],
+                keyvalue = "{}{}{}".format(self.prefix,
                                               data["machine_id"],
                                               str(data["sensor_id"]))
                 self.memcached.write(keyvalue, data)
