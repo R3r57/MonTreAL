@@ -4,15 +4,15 @@
 
 **RPi (Sensor)**
 ```
-                                     o- ...
-        USB                          |
-         |                           o- NsqReader - ...
+                                     o- NsqReader - InfluxDBWriter - InfluxDB o- Chronograf
+        USB                          |                                        |
+         |                           o- NsqReader - ...                       o- Grafana
        Sensor                        |
-         |                           o- NsqReader - ...
-    SocketWriter                     |
-         |                           o- NsqReader - RawMemcacheWriter
-        [|]                          |
-         |                           o- NsqAdmin, NsqCli, etc.
+         |                           o- NsqReader - ...                           o- Rest
+    SocketWriter                     |                                            |
+         |                           o- NsqReader - RawMemcacheWriter - memcached o- ...
+        [|]                          |                                            |
+         |                           o- NsqAdmin, NsqCli, etc.                    o- ...
     SocketReader                     |
          |                           |\
   MetaDataAppender                   | NsqLookup
