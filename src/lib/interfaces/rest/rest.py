@@ -21,12 +21,19 @@ class Rest(threading.Thread):
 
     def run(self):
         logger.info("Started {}".format(self.name))
-        server = Process(target=self.app.run, kwargs={"host": "0.0.0.0", "debug": True})
-        server.start()
-        self.event.wait()
-        server.terminate()
-        server.join(15)
-        logger.info("Stopped {}".format(self.name))
+        try:
+            process = Process(target=self.app.run, kwargs={"host": "0.0.0.0", "debug": True})
+            while not self.event.is_set():
+                if not process.is_alive():
+                    logger.info("Subprocess for REST not alive...starting")
+                    process.start()
+                self.event.wait(2)
+        except Exception as e:
+            logger.error("{}".format(e))
+        finally:
+            process.terminate()
+            process.join(15)
+            logger.info("Stopped {}".format(self.name))
 
 class SensorData(Resource):
     def __init__(self, memcache_client):
