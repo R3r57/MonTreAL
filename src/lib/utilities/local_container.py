@@ -35,8 +35,9 @@ class LocalContainer (threading.Thread):
         image = self.config["local"]["image"]
         label = self.config["local"]['label']
         environment = self.config["local"]["environment"]
-        environment.update({"CONFIG": "{}".format(self.config["sensors"])})
-        environment.update({"SOCKET": "{}".format(self.__get_ip_address(), 4711)})
+        environment.update({"CONFIG": "{{ 'sensors': {}, 'utilities': {{ 'logging': {}}}}}".format(self.config["sensors"], self.config["utilities"])})
+        environment.update({"SOCKET": "{}".format(self.__get_ip_address())})
+        print(str(environment))
 
         try:
             if self.config["local"]["device"]:

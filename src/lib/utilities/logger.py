@@ -1,0 +1,39 @@
+import logging
+
+class LoggerFactory:
+
+    def __init__(self, config):
+        self.config = config
+        self.level = {
+            "info": logging.INFO,
+            "debug": logging.DEBUG,
+            "error": logging.ERROR
+        }
+
+    def create_logger(self):
+        logger = logging.getLogger("montreal")
+        logger.propagate = False
+        logger.setLevel(self.level[self.config['level'].lower()])
+
+        handlers = []
+        if self.config["handlers"]["streamhandler"]["enabled"]:
+            handlers.append(self.__get_stream_handler())
+
+        handlers = self.__set_formatter(handlers, self.config['format'], self.config['dateformat'])
+        logger = self.__add_handlers(logger, handlers)
+
+        return logger
+
+    def __get_stream_handler(self):
+        return logging.StreamHandler()
+
+    def __set_formatter(self, handlers, format, dateformat):
+        formatter = logging.Formatter(format, datefmt=dateformat)
+        for handler in handlers:
+            handler.setFormatter(formatter)
+        return handlers
+
+    def __add_handlers(self, logger, handlers):
+        for handler in handlers:
+            logger.addHandler(handler)
+        return logger
