@@ -21,6 +21,12 @@
       "handlers": {
         "streamhandler": {
           "enabled": true
+        },
+        "graylog": {
+          "enabled": false,
+          "type": "tcp",
+          "host": "192.168.178.25",
+          "port": 12202
         }
       }
     },
