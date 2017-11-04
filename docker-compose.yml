@@ -93,7 +93,7 @@ services:
     tty: true
     environment:
       CONFIG: ./montreal.json
-      SERVICE: "json_memcache_writer"
+      SERVICE: "sensor_data_memcache_writer"
 
 #################################################
   influxdb_writer:
@@ -126,3 +126,18 @@ services:
     environment:
       CONFIG: ./montreal.json
       SERVICE: "rest"
+
+#################################################
+  sensor_list:
+    build:
+      context: ./
+      dockerfile: Dockerfile.amd64
+    image: montreal
+    volumes:
+      - ./config/montreal.json:/app/montreal.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./montreal.json
+      SERVICE: "sensor_list_memcache_writer"

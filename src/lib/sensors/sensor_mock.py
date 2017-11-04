@@ -1,4 +1,4 @@
-import logging, os, threading, json
+import logging, os, threading, json, random
 from lib.sensors.data import Measurement
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
@@ -17,16 +17,15 @@ class SensorMock (threading.Thread):
 
     def run(self):
         logger.info("Started: {}".format(self.name))
-        sensor_id = 1
         message_counter = 1
         while not self.event.is_set():
             if self.queue.empty():
-                logger.info("Measurement {} put into queue".format(message_counter))
-                measurement = Measurement(sensor_id, self.temp, self.hum).to_json()
-                self.queue.put(json.dumps(measurement))
-                sensor_id += 1
-                message_counter += 1
-                if sensor_id >= self.sensor_count:
-                    sensor_id = 1
+                for sensor_id in range(1, self.sensor_count):
+                    temp_derivation = random.randint(-2, 2)
+                    hum_derivation = random.randint(-5, 5)
+                    logger.info("Measurement {} put into queue".format(message_counter))
+                    measurement = Measurement(sensor_id, (self.temp + temp_derivation), (self.hum + hum_derivation)).to_json()
+                    self.queue.put(json.dumps(measurement))
+                    message_counter += 1
             self.event.wait(self.interval)
         logger.info("Stopped: {}".format(self.name))

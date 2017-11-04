@@ -3,7 +3,7 @@ import threading, json, logging, os
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class JSONWriter (threading.Thread):
+class SensorDataWriter (threading.Thread):
     def __init__(self, name, event, queue, config, prefix="json"):
         threading.Thread.__init__(self)
         self.name = name
