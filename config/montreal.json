@@ -36,6 +36,9 @@
     },
     "metadata": {
       "local_configuration": "./local_configuration.json"
+    },
+    "sensorlist": {
+      "interval": 300
     }
   },
   "interfaces": {
@@ -64,7 +67,7 @@
       "port": 11211,
       "connect_timeout": 180,
       "timeout": 180,
-      "key_expiration": 180,
+      "key_expiration": 600,
       "noreply_flag": true
     },
     "influxdb": {
