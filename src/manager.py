@@ -51,15 +51,15 @@ class Manager:
         logger.info("Terminating...")
         self.event.set()
         start = datetime.datetime.now()
+        counter = 1
         while not len(self.threads) == 0:
-            counter = 1
             for t in self.threads:
                 t.join(timeout=2)
                 logger.info("Joining {} (attempt: {})".format(t.name, counter))
-                counter += 1
                 if not t.isAlive():
                     self.threads.remove(t)
                     break
+            counter += 1
         logger.info("Duration till exit: {}".format(str(datetime.datetime.now() - start)))
         sys.exit(0)
 
