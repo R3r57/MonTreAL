@@ -20,8 +20,8 @@ class LocalContainer (threading.Thread):
                 if self.container is None:
                     container.remove(force=True, v=True)
                 elif self.container.id != container.id or self.container.status not in ["running", "created"]:
-                    print("Cleanup container with label: ", self.config["local"]['label'])
-                    print("cleanup {}: {}".format(self.container.id, self.container.status))
+                    logger.info("Cleanup container with label: ", self.config["local"]['label'])
+                    logger.info("cleanup {}: {}".format(self.container.id, self.container.status))
                     container.remove(force=True, v=True)
 
     def __get_ip_address(self):
@@ -35,8 +35,8 @@ class LocalContainer (threading.Thread):
         image = self.config["local"]["image"]
         label = self.config["local"]['label']
         environment = self.config["local"]["environment"]
-        environment.update({"CONFIG": "{}".format(self.config["sensors"])})
-        environment.update({"SOCKET": "{}".format(self.__get_ip_address(), 4711)})
+        environment.update({"CONFIG": "{{ 'sensors': {}, 'utilities': {{ 'logging': {}}}}}".format(self.config["sensors"], self.config["utilities"])})
+        environment.update({"SOCKET": "{}".format(self.__get_ip_address())})
 
         try:
             if self.config["local"]["device"]:

@@ -12,8 +12,10 @@ class Services:
         self.services = {
             "sensor": self.__create_sensors,
             "local_manager": self.__create_local_manager,
-            "raw_memcache_writer": self.__create_raw_memcache,
-            "influxdb_writer": self.__create_influxdb
+            "sensor_data_memcache_writer": self.__create_sensor_data_memcache,
+            "influxdb_writer": self.__create_influxdb,
+            "rest": self.__create_rest,
+            "sensor_list_memcache_writer": self.__create_sensor_list_creator
         }
 
     def get_services(self, type):
@@ -40,7 +42,7 @@ class Services:
             nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['interfaces']['nsq'])
             threads.append(nsq_writer)
 
-            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors']})
+            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors'], "utilities": self.config["utilities"]["logging"]})
             threads.append(local_container)
 
             return threads
@@ -57,12 +59,12 @@ class Services:
 
             if type == "ash2200":
                 from lib.sensors.ash2200 import ASH2200, USBSerial
-                usb_serial = USBSerial(self.config['ash2200'])
+                usb_serial = USBSerial(self.config['sensors']['ash2200'])
                 ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
                 threads.append(ash2200)
             elif type == "mock":
                 from lib.sensors.sensor_mock import SensorMock
-                mock = SensorMock("Mock", self.event, sensor_queue, self.config['mock'])
+                mock = SensorMock("Mock", self.event, sensor_queue, self.config['sensors']['mock'])
                 threads.append(mock)
             else:
                 logger.error("No sensortype selected: {}".format(type))
@@ -73,19 +75,19 @@ class Services:
             return threads
 
 ##################################################################
-# Raw Memcache                                                   #
+# Sensor Data Memcache                                                   #
 ##################################################################
-    def __create_raw_memcache(self):
-            from lib.interfaces.memcache.writer.raw import RawWriter
+    def __create_sensor_data_memcache(self):
+            from lib.interfaces.memcache.writer.sensor_data import SensorDataWriter
             threads = []
 
-            raw_queue = Queue(maxsize=10)
+            sensor_data_queue = Queue(maxsize=10)
 
-            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, raw_queue, self.config['interfaces']['nsq'], channel="memcache_raw")
+            nsq_reader = NsqReader("SensorData_Memcache_NsqReader", self.event, sensor_data_queue, self.config['interfaces']['nsq'], channel="memcache_sensor_data")
             threads.append(nsq_reader)
 
-            raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, raw_queue, self.config['interfaces']['memcached'])
-            threads.append(raw_memcache_writer)
+            sensor_data_memcache_writer = SensorDataWriter("SensorData_Memcache_Writer", self.event, sensor_data_queue, self.config['interfaces']['memcached'])
+            threads.append(sensor_data_memcache_writer)
 
             return threads
 
@@ -105,3 +107,39 @@ class Services:
             threads.append(influxdb_writer)
 
             return threads
+
+##################################################################
+# REST                                                           #
+##################################################################
+    def __create_rest(self):
+        from lib.interfaces.rest.rest import Rest
+        threads = []
+
+        rest = Rest("REST", self.event, self.config['interfaces']['memcached'])
+
+        threads.append(rest)
+
+        return threads
+
+##################################################################
+# Sensor List Memcache                                           #
+##################################################################
+    def __create_sensor_list_creator(self):
+        from lib.utilities.sensor_list_creator import SensorListCreator
+        from lib.interfaces.memcache.writer.sensor_list import SensorListWriter
+        threads = []
+
+        sensor_data_queue = Queue()
+
+        nsq_reader = NsqReader("SensorListCreator_NsqReader", self.event, sensor_data_queue, self.config['interfaces']['nsq'], channel="memcache_sensorlist")
+        threads.append(nsq_reader)
+
+        sensor_list_queue = Queue(maxsize=10)
+
+        sensor_list_creator = SensorListCreator("SensorListCreator", self.event, sensor_data_queue, sensor_list_queue, self.config['utilities']['sensorlist'])
+        threads.append(sensor_list_creator)
+
+        sensor_list_memcache_writer = SensorListWriter("SensorListCreator_Memcache_Writer", self.event, sensor_list_queue, self.config['interfaces']['memcached'])
+        threads.append(sensor_list_memcache_writer)
+
+        return threads

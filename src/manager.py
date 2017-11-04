@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 import os, signal, threading, time, json, sys, datetime, logging
+from lib.utilities.configuration import ConfigurationReader
+from lib.utilities.logger import LoggerFactory
 from services import Services
 
-##################################################################
-# Logger                                                         #
-##################################################################
-logger = logging.getLogger("montreal")
-logger.propagate = False
-logger.setLevel(logging.INFO)
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-formatter = logging.Formatter("[%(class)s] %(asctime)s %(levelname)s: %(message)s", datefmt="%Y/%m/%d %H:%M:%S",)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+configuration = ConfigurationReader.get()
+logger = LoggerFactory(configuration['utilities']['logging']).create_logger()
 logger = logging.LoggerAdapter(logger, {"class": os.path.basename(__file__)})
 
 ##################################################################
@@ -23,7 +16,7 @@ class Manager:
     def __init__(self, service_type):
         self.threads = []
         self.service_type = service_type
-        self.config = self.__get_config()
+        self.config = configuration
         self.event = threading.Event()
         self.__register_signals()
         logger.info("Main program for {} initialized successfully".format(service_type))
@@ -36,19 +29,6 @@ class Manager:
     def __handle_signals(self, signum, stack):
         logger.info("Signal {} caught".format(signum))
         self.__terminate_threads()
-
-    def __get_config(self):
-        logger.info("Getting configuration...")
-        configuration = os.environ['CONFIG']
-        if os.path.isfile(configuration):
-            with open(configuration, "r") as file:
-                data = json.load(file)
-                logger.info("Configuration got from file: {}".format(configuration))
-                return data
-        else:
-            data = json.loads(configuration.replace("\'", "\""))
-            logger.info("Configuration got from environment: {}".format(configuration))
-            return data
 
     def __create_threads(self):
         logger.info("Creating threads for {}...".format(self.service_type))
@@ -71,15 +51,15 @@ class Manager:
         logger.info("Terminating...")
         self.event.set()
         start = datetime.datetime.now()
+        counter = 1
         while not len(self.threads) == 0:
-            counter = 1
             for t in self.threads:
                 t.join(timeout=2)
                 logger.info("Joining {} (attempt: {})".format(t.name, counter))
-                counter += 1
                 if not t.isAlive():
                     self.threads.remove(t)
                     break
+            counter += 1
         logger.info("Duration till exit: {}".format(str(datetime.datetime.now() - start)))
         sys.exit(0)
 
