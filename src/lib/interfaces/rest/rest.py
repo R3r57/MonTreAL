@@ -17,6 +17,9 @@ class Rest(threading.Thread):
         api.add_resource(SensorData,
                          '/<string:prefix>/<string:machine_id>/<string:sensor_id>',
                          resource_class_kwargs={"memcache_client": Client(config)})
+        api.add_resource(SensorList,
+                         '/<string:prefix>/sensorlist',
+                         resource_class_kwargs={"memcache_client": Client(config)})
         logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
@@ -42,4 +45,13 @@ class SensorData(Resource):
 
     def get(self, prefix, machine_id, sensor_id):
         data = self.memcache_client.read("{}{}{}".format(str(prefix), str(machine_id), str(sensor_id)))
+        return data
+
+class SensorList(Resource):
+    def __init__(self, memcache_client):
+        super(SensorList, self).__init__()
+        self.memcache_client = memcache_client
+
+    def get(self, prefix):
+        data = self.memcache_client.read("{}sensorlist".format(prefix))
         return data
