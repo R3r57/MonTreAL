@@ -41,7 +41,7 @@ class Services:
             nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['interfaces']['nsq'])
             threads.append(nsq_writer)
 
-            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors']})
+            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors'], "utilities": self.config["utilities"]["logging"]})
             threads.append(local_container)
 
             return threads
@@ -58,12 +58,12 @@ class Services:
 
             if type == "ash2200":
                 from lib.sensors.ash2200 import ASH2200, USBSerial
-                usb_serial = USBSerial(self.config['ash2200'])
+                usb_serial = USBSerial(self.config['sensors']['ash2200'])
                 ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
                 threads.append(ash2200)
             elif type == "mock":
                 from lib.sensors.sensor_mock import SensorMock
-                mock = SensorMock("Mock", self.event, sensor_queue, self.config['mock'])
+                mock = SensorMock("Mock", self.event, sensor_queue, self.config['sensors']['mock'])
                 threads.append(mock)
             else:
                 logger.error("No sensortype selected: {}".format(type))
