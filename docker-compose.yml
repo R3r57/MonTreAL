@@ -35,9 +35,7 @@ services:
     command: ["nsq_tail","-lookupd-http-address","nsqlookupd:4161","-topic","sensors"]
     networks:
       backend:
-    deploy:
-        restart_policy:
-            condition: on-failure
+    restart: on-failure
 
   memcached:
     image: memcached:latest
@@ -83,20 +81,19 @@ services:
       SERVICE: "local_manager"
 
 #################################################
-  # raw_memcache_writer:
-  #   build:
-  #     context: ./
-  #     dockerfile: Dockerfile.amd64
-  #   image: montreal
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - ./config/montreal.json:/app/montreal.json
-  #   networks:
-  #     backend:
-  #   tty: true
-  #   environment:
-  #     CONFIG: ./montreal.json
-  #     SERVICE: "raw_memcache_writer"
+  json_memcache_writer:
+    build:
+      context: ./
+      dockerfile: Dockerfile.amd64
+    image: montreal
+    volumes:
+      - ./config/montreal.json:/app/montreal.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./montreal.json
+      SERVICE: "json_memcache_writer"
 
 #################################################
   influxdb_writer:
@@ -105,7 +102,6 @@ services:
       dockerfile: Dockerfile.amd64
     image: montreal
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./config/montreal.json:/app/montreal.json
     networks:
       backend:
@@ -113,3 +109,20 @@ services:
     environment:
       CONFIG: ./montreal.json
       SERVICE: "influxdb_writer"
+
+#################################################
+  rest:
+    build:
+      context: ./
+      dockerfile: Dockerfile.amd64
+    image: montreal
+    volumes:
+      - ./config/montreal.json:/app/montreal.json
+    networks:
+      backend:
+    ports:
+      - "5000:5000"
+    tty: true
+    environment:
+      CONFIG: ./montreal.json
+      SERVICE: "rest"

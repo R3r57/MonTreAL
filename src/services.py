@@ -12,8 +12,9 @@ class Services:
         self.services = {
             "sensor": self.__create_sensors,
             "local_manager": self.__create_local_manager,
-            "raw_memcache_writer": self.__create_raw_memcache,
-            "influxdb_writer": self.__create_influxdb
+            "json_memcache_writer": self.__create_json_memcache,
+            "influxdb_writer": self.__create_influxdb,
+            "rest": self.__create_rest
         }
 
     def get_services(self, type):
@@ -73,19 +74,19 @@ class Services:
             return threads
 
 ##################################################################
-# Raw Memcache                                                   #
+# JSON Memcache                                                   #
 ##################################################################
-    def __create_raw_memcache(self):
-            from lib.interfaces.memcache.writer.raw import RawWriter
+    def __create_json_memcache(self):
+            from lib.interfaces.memcache.writer.json import JSONWriter
             threads = []
 
-            raw_queue = Queue(maxsize=10)
+            json_queue = Queue(maxsize=10)
 
-            nsq_reader = NsqReader("Raw_Memcache_NsqReader", self.event, raw_queue, self.config['interfaces']['nsq'], channel="memcache_raw")
+            nsq_reader = NsqReader("JSON_Memcache_NsqReader", self.event, json_queue, self.config['interfaces']['nsq'], channel="memcache_json")
             threads.append(nsq_reader)
 
-            raw_memcache_writer = RawWriter("Raw_Memcache_Writer", self.event, raw_queue, self.config['interfaces']['memcached'])
-            threads.append(raw_memcache_writer)
+            json_memcache_writer = JSONWriter("JSON_Memcache_Writer", self.event, json_queue, self.config['interfaces']['memcached'])
+            threads.append(json_memcache_writer)
 
             return threads
 
@@ -105,3 +106,16 @@ class Services:
             threads.append(influxdb_writer)
 
             return threads
+
+##################################################################
+# REST                                                           #
+##################################################################
+    def __create_rest(self):
+        from lib.interfaces.rest.rest import Rest
+        threads = []
+
+        rest = Rest("REST", self.event, self.config['interfaces']['memcached'])
+
+        threads.append(rest)
+
+        return threads
