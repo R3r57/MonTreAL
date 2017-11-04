@@ -120,3 +120,26 @@ class Services:
         threads.append(rest)
 
         return threads
+
+##################################################################
+# Sensor List Memcache                                           #
+##################################################################
+    def __create_sensor_list_creator(self):
+        from lib.utilities.sensor_list_creator import SensorListCreator
+        from lib.interfaces.memcache.writer.sensor_list import SensorListWriter
+        threads = []
+
+        sensor_data_queue = Queue()
+
+        nsq_reader = NsqReader("SensorListCreator_NsqReader", self.event, sensor_data_queue, self.config['interfaces']['nsq'], channel="memcache_sensorlist")
+        threads.append(nsq_reader)
+
+        sensor_list_queue = Queue(maxsize=10)
+
+        sensor_list_creator = SensorListCreator("SensorListCreator", self.event, sensor_data_queue, sensor_list_queue, self.config['utilities']['sensorlist'])
+        threads.append(sensor_list_creator)
+
+        sensor_list_memcache_writer = SensorListWriter("SensorListCreator_Memcache_Writer", self.event, sensor_list_queue, self.config['interfaces']['memcached'])
+        threads.append(sensor_list_memcache_writer)
+
+        return threads
