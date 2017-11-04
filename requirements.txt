@@ -6,3 +6,4 @@ flask
 flask-restful
 pymemcache
 influxdb
+pygelf
