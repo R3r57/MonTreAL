@@ -8,11 +8,11 @@
         USB                |                                         |
          |                 o- NsqReader - ...                        o- Grafana
        Sensor              |
-         |                 o- NsqReader - ...                             o- Rest
-    SocketWriter           |                                              |
-         |                 o- NsqReader - JSONMemcacheWriter - memcached -o- ...
-        [|]                |                                              |
-         |                 o- NsqAdmin, NsqCli, etc.                      o- ...
+         |                 o- NsqReader - SensorList -o             o- Rest
+    SocketWriter           |                          |             |
+         |                 o- NsqReader - SensorData -o- memcached -o- ...
+        [|]                |                                        |
+         |                 o- NsqAdmin, NsqCli, etc.                o- ...
     SocketReader           |
          |                 |\
   MetaDataAppender         | NsqLookup
