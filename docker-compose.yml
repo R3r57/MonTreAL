@@ -63,6 +63,17 @@ services:
     ports:
       - "3000:3000"
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./config/prometheus/:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      backend:
+    ports:
+      - "9090:9090"
+
 #################################################
   local_manager:
     build:
@@ -109,6 +120,23 @@ services:
     environment:
       CONFIG: ./montreal.json
       SERVICE: "influxdb_writer"
+
+#################################################
+  prometheus_writer:
+    build:
+      context: ./
+      dockerfile: Dockerfile.amd64
+    image: montreal
+    volumes:
+      - ./config/montreal.json:/app/montreal.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./montreal.json
+      SERVICE: "prometheus_writer"
+    ports:
+      - "8000:8000"
 
 #################################################
   rest:
