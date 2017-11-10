@@ -83,6 +83,9 @@
       "password": "root",
       "database": "montreal",
       "measurements": "Temperature & Humidity"
+    },
+    "prometheus": {
+      "port": 8000
     }
   }
 }
