@@ -20,7 +20,7 @@ class SensorMock (threading.Thread):
         message_counter = 1
         while not self.event.is_set():
             if self.queue.empty():
-                for sensor_id in range(1, self.sensor_count):
+                for sensor_id in range(1, self.sensor_count + 1):
                     temp_derivation = random.randint(-2, 2)
                     hum_derivation = random.randint(-5, 5)
                     logger.info("Measurement {} put into queue".format(message_counter))

@@ -14,6 +14,7 @@ class Services:
             "local_manager": self.__create_local_manager,
             "sensor_data_memcache_writer": self.__create_sensor_data_memcache,
             "influxdb_writer": self.__create_influxdb,
+            "prometheus_writer": self.__create_prometheus,
             "rest": self.__create_rest,
             "sensor_list_memcache_writer": self.__create_sensor_list_creator
         }
@@ -105,6 +106,23 @@ class Services:
 
             influxdb_writer = InfluxDBWriter("InfluxDB_Writer", self.event, influxdb_queue, self.config['interfaces']['influxdb'])
             threads.append(influxdb_writer)
+
+            return threads
+
+##################################################################
+# Prometheus Writer                                              #
+##################################################################
+    def __create_prometheus(self):
+            from lib.interfaces.prometheus.prometheus_writer import PrometheusWriter
+            threads = []
+
+            prometheus_queue = Queue(maxsize=10)
+
+            nsq_reader = NsqReader("Prometheus_NsqReader", self.event, prometheus_queue, self.config['interfaces']['nsq'], channel="prometheus")
+            threads.append(nsq_reader)
+
+            prometheus_writer = PrometheusWriter("Prometheus_Writer", self.event, prometheus_queue, self.config['interfaces']['prometheus'])
+            threads.append(prometheus_writer)
 
             return threads
 

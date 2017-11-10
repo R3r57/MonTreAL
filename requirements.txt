@@ -7,3 +7,4 @@ flask-restful
 pymemcache
 influxdb
 pygelf
+prometheus_client
