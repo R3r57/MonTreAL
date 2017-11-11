@@ -22,7 +22,7 @@ class PrometheusWriter(threading.Thread):
             self.event.wait(2)
             while not self.queue.empty():
                 data = json.loads(self.queue.get())
-                key = "{}_{}_{}".format(data['hostname'], data['machine_id'], data['sensor_id'])
+                key = "{}:{}:{}".format(data['hostname'], data['machine_id'], data['sensor_id'])
                 if key in collectors:
                     REGISTRY.unregister(collectors[key])
                     collectors.pop(key, None)
@@ -44,7 +44,7 @@ class SensorDataCollector(object):
         self.measurements = data['measurements']
 
     def collect(self):
-        gc = GaugeMetricFamily('SensorData_{}'.format(self.key), "documentation_placeholder", labels=['hostname', 'machine_id', 'building', 'room', 'sensor_id', 'type'])
+        gc = GaugeMetricFamily('montreal:{}'.format(self.key.replace("-", "_")), "documentation_placeholder", labels=['hostname', 'machine_id', 'building', 'room', 'sensor_id', 'type'])
         for mes in self.measurements:
             gc.add_metric([self.hostname, self.machine_id, self.building, self.room, str(self.sensor_id), mes['name']], mes['value'])
         yield gc
