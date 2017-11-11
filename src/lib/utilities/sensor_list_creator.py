@@ -40,7 +40,7 @@ class SensorListCreator(threading.Thread):
             sensors['sensors']['buildings'][building]['rooms'].update({ room: { "devices": {}}})
         if machine_id not in sensors['sensors']['buildings'][building]['rooms'][room]['devices']:
             sensors['sensors']['buildings'][building]['rooms'][room]['devices'].update({ machine_id: { "sensors": []}})
-        if sensor_id not in sensors['sensors']['buildings'][building][room]['devices'][machine_id]['sensors']:
+        if sensor_id not in sensors['sensors']['buildings'][building]['rooms'][room]['devices'][machine_id]['sensors']:
             sensors['sensors']['buildings'][building]['rooms'][room]['devices'][machine_id]['sensors'].append(sensor_id)
 
         return sensors
