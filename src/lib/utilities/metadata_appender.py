@@ -14,7 +14,7 @@ class MetaDataAppender(threading.Thread):
         self.input_queue = input_queue
         self.output_queue = output_queue
         self.hostname = None
-        self.machine_id = None
+        self.device_id = None
         self.building = None
         self.room = None
         self.__init_metadata()
@@ -37,7 +37,7 @@ class MetaDataAppender(threading.Thread):
     def __init_metadata(self):
         local_configuration = self.__get_local_configuration()
         self.hostname = self.__get_hostname(local_configuration['hostname'])
-        self.machine_id = local_configuration['machine_id']
+        self.device_id = local_configuration['device_id']
         self.building = local_configuration['building']
         self.room = local_configuration['room']
 
@@ -70,7 +70,7 @@ class MetaDataAppender(threading.Thread):
 
     def __convert(self, data):
         return SensorData(self.hostname,
-                          self.machine_id,
+                          self.device_id,
                           self.building,
                           self.room,
                           data)

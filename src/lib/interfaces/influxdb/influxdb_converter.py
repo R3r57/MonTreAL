@@ -11,7 +11,7 @@ class InfluxDBConverter:
         influxdb_json = InfluxDBFormat(self.name)
         influxdb_json.add_tag("sensor_id", data['sensor_id'])
         influxdb_json.add_tag("hostname", data['hostname'])
-        influxdb_json.add_tag("machine_id", data['machine_id'])
+        influxdb_json.add_tag("device_id", data['device_id'])
         influxdb_json.add_tag("building", data['building'])
         influxdb_json.add_tag("room", data['room'])
         for mes in data['measurements']:

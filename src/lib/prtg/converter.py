@@ -28,7 +28,7 @@ class Converter (threading.Thread):
         paessler = PRTGFormat()
         keyvalue = "{}{}_{}{}".format(self.prefix,
                                       data["hostname"],
-                                      data["machine_id"],
+                                      data["device_id"],
                                       str(data["sensor_id"]))
         paessler.set_text("{} {}".format(data["hostname"], str(data["sensor_id"])))
         for measure in data["measures"]:
