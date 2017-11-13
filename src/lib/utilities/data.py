@@ -1,10 +1,10 @@
 import json, time
 
 class SensorData:
-    def __init__(self, hostname, machine_id, building, room, data):
+    def __init__(self, hostname, device_id, building, room, data):
         self.data = json.loads(data.replace("'", '"'))
         self.data.update({"hostname": hostname,
-                          "machine_id": machine_id,
+                          "device_id": device_id,
                           "building": building,
                           "room": room,
                           "timestamp": int(time.time())})
