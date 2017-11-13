@@ -20,7 +20,7 @@ class SensorDataWriter (threading.Thread):
             while not self.queue.empty():
                 data = json.loads(self.queue.get().replace("'", '"'))
                 keyvalue = "{}{}{}".format(self.prefix,
-                                              data["machine_id"],
+                                              data["device_id"],
                                               str(data["sensor_id"]))
                 self.memcached.write(keyvalue, data)
                 logger.info("Wrote data into memcache: {}".format(keyvalue))
