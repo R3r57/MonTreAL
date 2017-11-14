@@ -4,9 +4,14 @@
 [![Docker Stars](https://img.shields.io/docker/stars/r3r57/montreal.svg)](https://hub.docker.com/r/r3r57/montreal/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/r3r57/montreal.svg)](https://hub.docker.com/r/r3r57/montreal/)
 
-- [Docker Image Builder](https://github.com/r3r57/MonTreAL_docker-image-builder)
-- [Docker Swarm Setup](https://github.com/r3r57/MonTreAL_swarm-setup)
-- [VM Image Builder](https://github.com/r3r57/MonTreAL_vm-image-builder)
+[Docker Image Builder](https://github.com/r3r57/MonTreAL_docker-image-builder)
+| [Docker Swarm Setup](https://github.com/r3r57/MonTreAL_swarm-setup)
+| [VM Image Builder](https://github.com/r3r57/MonTreAL_vm-image-builder)
+
+An ever-increasing amount of devices connected over the Internet pave the road towards the realization of the ‘Internet of Things’ (IoT) idea. With IoT, endangered infrastructures can easily be enriched with low-cost, energy-efficient monitoring solutions, thus alerting is possible before severe damage occurs. We developed a library wide humidity and temperature monitoring framework MonTreAL, which runs on commodity single board computers. In addition, our primary objectives are to enable flexible data collection among a computing cluster by migrating virtualization approaches of data centers to IoT infrastructures.
+
+We evaluate our prototype of the system MonTreAL at the University Library of Bamberg by collecting temperature and humidity data.
+
 
 ## Flow
 
