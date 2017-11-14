@@ -14,13 +14,13 @@ class LocalManager (threading.Thread):
 
     def __clean_old(self):
         logger.info("Cleaning old container...")
-        containerlist = self.dcli.containers.list(filters={"label": self.config["local"]['label']}, all=True)
+        containerlist = self.dcli.containers.list(filters={"label": self.config["local_manager"]['label']}, all=True)
         if len(containerlist) > 0:
             for container in containerlist:
                 if self.container is None:
                     container.remove(force=True, v=True)
                 elif self.container.id != container.id or self.container.status not in ["running", "created"]:
-                    logger.info("Cleanup container with label: ", self.config["local"]['label'])
+                    logger.info("Cleanup container with label: ", self.config["local_manager"]['label'])
                     logger.info("cleanup {}: {}".format(self.container.id, self.container.status))
                     container.remove(force=True, v=True)
 
@@ -32,32 +32,36 @@ class LocalManager (threading.Thread):
 
     def __create_container(self):
         logger.info("Creating container...")
-        image = self.config["local"]["image"]
-        label = self.config["local"]['label']
-        environment = self.config["local"]["environment"]
+        label = self.config['local_manager']['label']
+        image = "{}-{}".format(self.config['local_manager']['image'], self.config['local_configuration']['meta']['architecture'])
+
+        devices = []
+        command = None
+        sensors = self.config['local_configuration']['sensor']
+        if sensors['service'] and sensors['type']:
+            environment = { "SERVICE": sensors['service'], "TYPE": sensors['type'] }
+            for device in sensors['devices']:
+                devices.append("{}:{}".format(device, device))
+            if sensors['command']:
+                command = sensors['command']
+        else:
+            environment = self.config["local_manager"]["global_sensor_configuration"]
+            for device in self.config['local_manager']['devices']:
+                devices.append("{}:{}".format(device, device))
+            if self.config['local_manager']['command']:
+                command = self.config["local_manager"]["command"]
+
         environment.update({"CONFIG": "{{ 'sensors': {}, 'utilities': {{ 'logging': {}}}}}".format(self.config["sensors"], self.config["utilities"])})
         environment.update({"SOCKET": "{}".format(self.__get_ip_address())})
 
-        try:
-            if self.config["local"]["device"]:
-                device = [self.config["local"]["device"] + ":" + self.config["local"]["device"]]
-            else:
-                device = []
-        except KeyError:
-            device = []
-        try:
-            command = self.config["local"]["command"]
-        except KeyError:
-            command = None
-
         self.container = self.dcli.containers.create(image,
                                                      command=command,
-                                                     name = "sensor",
+                                                     name = "sensor_container",
                                                      tty=True,
-                                                     devices=device,
+                                                     devices=devices,
                                                      environment=environment,
                                                      labels={label: ""},
-                                                     network=self.config["local"]["network_name"],
+                                                     network=self.config["local_manager"]["network_name"],
                                                      volumes=[])
         logger.info("...success")
 
@@ -65,7 +69,7 @@ class LocalManager (threading.Thread):
         logger.info("Started: {}".format(self.name))
         while not self.event.is_set():
             self.__clean_old()
-            if len(self.dcli.containers.list(filters={"label": self.config["local"]['label']})) == 0:
+            if len(self.dcli.containers.list(filters={"label": self.config["local_manager"]['label']})) == 0:
                 self.__create_container()
                 self.container.start()
                 self.event.wait(30)
