@@ -1,4 +1,4 @@
-import os, logging
+import json, os, logging
 from lib.interfaces.nsq.nsq_reader import NsqReader
 from multiprocessing import Queue
 
@@ -10,21 +10,33 @@ class Services:
         self.config = config
         self.event = event
         self.services = {
-            "sensor": self.__create_sensors,
             "local_manager": self.__create_local_manager,
             "sensor_data_memcache_writer": self.__create_sensor_data_memcache,
+            "sensor_list_memcache_writer": self.__create_sensor_list_creator,
             "influxdb_writer": self.__create_influxdb,
             "prometheus_writer": self.__create_prometheus,
             "rest": self.__create_rest,
-            "sensor_list_memcache_writer": self.__create_sensor_list_creator
+            "temperature_humidity_sensor": self.__create_temperature_humidity_sensor
         }
 
     def get_services(self, type):
         return self.services.get(type)()
 
-##################################################################
-# Local Manager                                                  #
-##################################################################
+
+    """
+    Local Manager
+
+    """
+    def __get_local_configuration(self):
+        local_configuration_path = self.config['utilities']['local_manager']['local_configuration']
+        logger.info("Local configuration file set to {}".format(local_configuration_path))
+        if os.path.isfile(local_configuration_path):
+            with open(local_configuration_path, 'r') as file:
+                data = json.load(file)
+                return data
+        else:
+            logger.error("Local configuration file not found: {}".format(local_configuration_path))
+
     def __create_local_manager(self):
             from lib.interfaces.socket.socket_reader import SocketReader
             from lib.utilities.metadata_appender import MetaDataAppender
@@ -32,26 +44,29 @@ class Services:
             from lib.interfaces.nsq.nsq_writer import NsqWriter
             threads = []
 
+            local_configuration = self.__get_local_configuration()
+
             message_queue = Queue(maxsize=10)
             socket_reader = SocketReader("SocketReader", self.event, message_queue)
             threads.append(socket_reader)
 
             meta_queue = Queue(maxsize=10)
-            meta_data_appender = MetaDataAppender("MetaData", self.event, message_queue, meta_queue, self.config['utilities']['metadata'])
+            meta_data_appender = MetaDataAppender("MetaData", self.event, message_queue, meta_queue, local_configuration)
             threads.append(meta_data_appender)
 
             nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['interfaces']['nsq'])
             threads.append(nsq_writer)
 
-            local_container = LocalManager("LocalManager", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors'], "utilities": self.config["utilities"]["logging"]})
-            threads.append(local_container)
+            local_manager = LocalManager("LocalManager", self.event, {"local_manager": self.config['utilities']['local_manager'], "local_configuration": local_configuration, "sensors": self.config['sensors'], "utilities": self.config["utilities"]["logging"]})
+            threads.append(local_manager)
 
             return threads
 
-##################################################################
-# Local Sensor                                                   #
-##################################################################
-    def __create_sensors(self):
+    """
+    Temperature & Humidity Sensors
+
+    """
+    def __create_temperature_humidity_sensor(self):
             from lib.interfaces.socket.socket_writer import SocketWriter
             threads = []
             type = os.environ['TYPE']
@@ -59,12 +74,12 @@ class Services:
             sensor_queue = Queue(maxsize=10)
 
             if type == "ash2200":
-                from lib.sensors.ash2200 import ASH2200, USBSerial
+                from lib.sensors.temperature_humidity.ash2200 import ASH2200, USBSerial
                 usb_serial = USBSerial(self.config['sensors']['ash2200'])
                 ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
                 threads.append(ash2200)
             elif type == "mock":
-                from lib.sensors.sensor_mock import SensorMock
+                from lib.sensors.temperature_humidity.sensor_mock import SensorMock
                 mock = SensorMock("Mock", self.event, sensor_queue, self.config['sensors']['mock'])
                 threads.append(mock)
             else:
@@ -75,9 +90,11 @@ class Services:
 
             return threads
 
-##################################################################
-# Sensor Data Memcache                                                   #
-##################################################################
+
+    """
+    Sensor Data Memcache Writer
+
+    """
     def __create_sensor_data_memcache(self):
             from lib.interfaces.memcache.writer.sensor_data import SensorDataWriter
             threads = []
@@ -92,9 +109,11 @@ class Services:
 
             return threads
 
-##################################################################
-# InfluxDB Writer                                                #
-##################################################################
+
+    """
+    InfluxDB Writer
+
+    """
     def __create_influxdb(self):
             from lib.interfaces.influxdb.influxdb_writer import InfluxDBWriter
             threads = []
@@ -109,9 +128,11 @@ class Services:
 
             return threads
 
-##################################################################
-# Prometheus Writer                                              #
-##################################################################
+
+    """
+    Prometheus Writer
+
+    """
     def __create_prometheus(self):
             from lib.interfaces.prometheus.prometheus_writer import PrometheusWriter
             threads = []
@@ -126,9 +147,11 @@ class Services:
 
             return threads
 
-##################################################################
-# REST                                                           #
-##################################################################
+
+    """
+    REST
+
+    """
     def __create_rest(self):
         from lib.interfaces.rest.rest import Rest
         threads = []
@@ -139,9 +162,11 @@ class Services:
 
         return threads
 
-##################################################################
-# Sensor List Memcache                                           #
-##################################################################
+
+    """
+    Sensor List Memcache Writer
+
+    """
     def __create_sensor_list_creator(self):
         from lib.utilities.sensor_list_creator import SensorListCreator
         from lib.interfaces.memcache.writer.sensor_list import SensorListWriter
