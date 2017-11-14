@@ -28,7 +28,7 @@ class Services:
     def __create_local_manager(self):
             from lib.interfaces.socket.socket_reader import SocketReader
             from lib.utilities.metadata_appender import MetaDataAppender
-            from lib.utilities.local_container import LocalContainer
+            from lib.utilities.local_manager import LocalManager
             from lib.interfaces.nsq.nsq_writer import NsqWriter
             threads = []
 
@@ -43,7 +43,7 @@ class Services:
             nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['interfaces']['nsq'])
             threads.append(nsq_writer)
 
-            local_container = LocalContainer("LocalContainer", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors'], "utilities": self.config["utilities"]["logging"]})
+            local_container = LocalManager("LocalManager", self.event, {"local": self.config['utilities']['local'], "sensors": self.config['sensors'], "utilities": self.config["utilities"]["logging"]})
             threads.append(local_container)
 
             return threads

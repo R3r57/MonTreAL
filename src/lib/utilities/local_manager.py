@@ -2,7 +2,7 @@ import socket, docker, threading, json, os, base64, logging
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class LocalContainer (threading.Thread):
+class LocalManager (threading.Thread):
     def __init__(self, name, event, config):
         threading.Thread.__init__(self)
         self.name = name
