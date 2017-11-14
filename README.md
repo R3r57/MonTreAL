@@ -4,6 +4,10 @@
 [![Docker Stars](https://img.shields.io/docker/stars/r3r57/montreal.svg)](https://hub.docker.com/r/r3r57/montreal/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/r3r57/montreal.svg)](https://hub.docker.com/r/r3r57/montreal/)
 
+- [Docker Image Builder](https://github.com/r3r57/MonTreAL_docker-image-builder)
+- [Docker Swarm Setup](https://github.com/r3r57/MonTreAL_swarm-setup)
+- [VM Image Builder](https://github.com/r3r57/MonTreAL_vm-image-builder)
+
 ## Flow
 
 ```
