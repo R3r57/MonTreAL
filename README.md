@@ -4,15 +4,17 @@
 
 **RPi (Sensor)**
 ```
-                           o- NsqReader - InfluxDBWriter - InfluxDB -o- Chronograf
-        USB                |                                         |
-         |                 o- NsqReader - ...                        o- Grafana
+                           o- NsqReader - InfluxDBWriter   - InfluxDB   -o- Chronograf, (Kapacitor)
+                           |                                              \
+                           |                                               o- Grafana
+        USB                |                                              /
+         |                 o- NsqReader - PrometheusWriter - Prometheus -o- (Alertmanager)
        Sensor              |
-         |                 o- NsqReader - SensorList -o             o- Rest
-    SocketWriter           |                          |             |
-         |                 o- NsqReader - SensorData -o- memcached -o- ...
-        [|]                |                                        |
-         |                 o- NsqAdmin, NsqCli, etc.                o- ...
+         |                 o- NsqReader - SensorList -o
+    SocketWriter           |                          |- memcached - Rest
+         |                 o- NsqReader - SensorData -o
+        [|]                |                          
+         |                 o- NsqAdmin, NsqCli, etc.
     SocketReader           |
          |                 |\
   MetaDataAppender         | NsqLookup
