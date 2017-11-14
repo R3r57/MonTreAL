@@ -83,7 +83,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/montreal.json:/app/montreal.json
-      - ./config/local_configuration.json:/app/local_configuration.json
+      - ./config/local_configuration.json:/etc/montreal/local_configuration.json
     networks:
       backend:
     tty: true
