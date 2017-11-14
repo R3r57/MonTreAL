@@ -41,10 +41,11 @@ class SensorDataCollector(object):
         self.building = data['building']
         self.room = data['room']
         self.sensor_id = data['sensor_id']
+        self.type = data['type']
         self.measurements = data['measurements']
 
     def collect(self):
-        gc = GaugeMetricFamily('montreal:{}'.format(self.key.replace("-", "_")), "documentation_placeholder", labels=['hostname', 'device_id', 'building', 'room', 'sensor_id', 'type'])
+        gc = GaugeMetricFamily('montreal:{}'.format(self.key.replace("-", "_")), "documentation_placeholder", labels=['hostname', 'device_id', 'building', 'room', 'sensor_id', 'type', 'name'])
         for mes in self.measurements:
-            gc.add_metric([self.hostname, self.device_id, self.building, self.room, str(self.sensor_id), mes['name']], mes['value'])
+            gc.add_metric([self.hostname, self.device_id, self.building, self.room, str(self.sensor_id), str(self.type), mes['name']], mes['value'])
         yield gc
