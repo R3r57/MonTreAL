@@ -30,18 +30,17 @@
         }
       }
     },
-    "local": {
-      "label": "local-container",
-      "image": "montreal",
+    "local_manager": {
+      "local_configuration": "/etc/montreal/local_configuration.json",
+      "label": "sensor-container",
+      "image": "montreal:latest",
       "network_name": "montreal_backend",
-      "device": "",
-      "environment": {
-        "SERVICE": "sensor",
+      "device": [],
+      "command": "",
+      "global_sensor_configuration": {
+        "SERVICE": "temperature_humidity_sensor",
         "TYPE": "mock"
       }
-    },
-    "metadata": {
-      "local_configuration": "./local_configuration.json"
     },
     "sensorlist": {
       "interval": 300
