@@ -12,7 +12,7 @@ class SocketReader (threading.Thread):
         self.server_port = server_port
         self.queue = queue
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(2)  # equals non-blocking
+        self.sock.settimeout(10)  # equals non-blocking
         logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
@@ -33,24 +33,22 @@ class SocketReader (threading.Thread):
                     if connection:
                         logger.info("Connection established")
                         logger.info("Start receiving data...")
+                        message = b''
                         while not self.event.is_set():
-                            message = b''
-                            while not self.event.is_set():
-                                chunk = connection.recv(1)
-                                if not chunk or chunk == "\n".encode("utf-8"):
-                                    break
-                                message += chunk
-                            if message:
-                                logger.info("Successfully received data")
-                                decoded_message = str(message.decode("utf-8"))
-                                self.queue.put(decoded_message)
-                                logger.info("Data put into queue")
-                            else:
-                                time.sleep(1)
-                        logger.info("Stopped {}: Event is set on exit: {}".format(self.name, str(self.event.is_set())))
+                            chunk = connection.recv(1)
+                            if not chunk or chunk == "\n".encode("utf-8"):
+                                break
+                            message += chunk
+                        if message:
+                            logger.info("Successfully received data")
+                            decoded_message = str(message.decode("utf-8"))
+                            self.queue.put(decoded_message)
+                            logger.info("Data put into queue")
+                        connection.close()
                 except socket.timeout:
-                    logger.error("Socket timed out...retrying")
+                    logger.info("Socket timed out...retrying")
                 except Exception as e:
                     logger.error("Socket error: {}".format(e))
         finally:
             connection.close()
+            logger.info("Stopped: {}".format(self.name))
