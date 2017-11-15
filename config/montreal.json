@@ -32,14 +32,18 @@
     },
     "local_manager": {
       "local_configuration": "/etc/montreal/local_configuration.json",
-      "label": "sensor-container",
+      "label": "montreal-sensor-container",
       "image": "montreal:latest",
       "network_name": "montreal_backend",
       "device": [],
       "command": "",
-      "global_sensor_configuration": {
-        "SERVICE": "temperature_humidity_sensor",
-        "TYPE": "mock"
+      "global_sensors": {
+        "sensor_mock_1": {
+          "service": "temperature_humidity_sensor",
+          "type": "mock",
+          "devices": [],
+          "command": ""
+        }
       }
     },
     "sensorlist": {

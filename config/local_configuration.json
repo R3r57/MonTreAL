@@ -7,10 +7,6 @@
     "building": "L9",
     "room": "Wohnzimmer"
   },
-  "sensor": {
-    "service": "temperature_humidity_sensor",
-    "type": "mock",
-    "devices": [],
-    "command": ""
+  "sensors": {
   }
 }
