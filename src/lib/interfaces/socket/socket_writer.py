@@ -11,26 +11,30 @@ class SocketWriter (threading.Thread):
         self.queue = queue
         self.server_address = server_address
         self.server_port = server_port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         logger.info("{} initialized successfully".format(self.name))
 
-    def __send(self, message):
+    def __send(self, sock, message):
         try:
             msg = str(message + "\n").encode("utf-8")
-            self.sock.sendall(msg)
+            sock.sendall(msg)
         except socket.error as msg:
             logger.error(str(msg))
 
     def run(self):
         logger.info("Started: {}".format(self.name))
-        try:
-            self.sock.connect((self.server_address, self.server_port))
-            while not self.event.is_set():
-                self.event.wait(5)
-                while not self.queue.empty():
+        while not self.event.is_set():
+            if not self.queue.empty():
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                try:
+                    sock.connect((self.server_address, self.server_port))
                     data = self.queue.get()
-                    self.__send(data)
+                    self.__send(sock, data)
                     logger.info("Wrote data to socket")
-        finally:
-            logger.info("Stopped: {}".format(self.name))
-            self.sock.close()
+                except Exception as e:
+                    logger.error(e)
+                    self.event.wait(1);
+                finally:
+                    sock.close()
+            else:
+                self.event.wait(5)
+        logger.info("Stopped: {}".format(self.name))
