@@ -8,7 +8,7 @@ class LocalManager (threading.Thread):
         self.name = name
         self.event = event
         self.config = config
-        self.container = None
+        self.containers = []
         self.dcli = docker.DockerClient.from_env()
         logger.info("{} initialized successfully".format(self.name))
 
@@ -17,12 +17,8 @@ class LocalManager (threading.Thread):
         containerlist = self.dcli.containers.list(filters={"label": self.config["local_manager"]['label']}, all=True)
         if len(containerlist) > 0:
             for container in containerlist:
-                if self.container is None:
-                    container.remove(force=True, v=True)
-                elif self.container.id != container.id or self.container.status not in ["running", "created"]:
-                    logger.info("Cleanup container with label: ", self.config["local_manager"]['label'])
-                    logger.info("cleanup {}: {}".format(self.container.id, self.container.status))
-                    container.remove(force=True, v=True)
+                container.remove(force=True, v=True)
+                logger.info("Removed old container: {} {} {}".format(container.name, container.id, container.status))
 
     def __get_ip_address(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -30,55 +26,54 @@ class LocalManager (threading.Thread):
             myip = s.getsockname()[0]
         return myip
 
-    def __create_container(self):
-        logger.info("Creating container...")
+    def __initialize_containers(self):
+        self.__clean_old()
+        logger.info("Creating containers...")
+        containers = []
         label = self.config['local_manager']['label']
         image = "{}-{}".format(self.config['local_manager']['image'], self.config['local_configuration']['meta']['architecture'])
+        if len(self.config['local_configuration']['sensors']) > 0:
+            for sensor, configuration  in self.config['local_configuration']['sensors'].items():
+                containers.append(self.__create_container(image, label, sensor, configuration))
+        else:
+            for sensor, configuration in self.config['local_manager']['global_sensors'].items():
+                containers.append(self.__create_container(image, label, sensor, configuration))
+        return containers
 
+    def __create_container(self, image, label, sensor, configuration):
         devices = []
         command = None
-        sensors = self.config['local_configuration']['sensor']
-        if sensors['service'] and sensors['type']:
-            environment = { "SERVICE": sensors['service'], "TYPE": sensors['type'] }
-            for device in sensors['devices']:
-                devices.append("{}:{}".format(device, device))
-            if sensors['command']:
-                command = sensors['command']
-        else:
-            environment = self.config["local_manager"]["global_sensor_configuration"]
-            for device in self.config['local_manager']['devices']:
-                devices.append("{}:{}".format(device, device))
-            if self.config['local_manager']['command']:
-                command = self.config["local_manager"]["command"]
+        environment = {"CONFIG": "{{ 'sensors': {}, 'utilities': {{ 'logging': {}}}}}".format(self.config["sensors"],self.config["utilities"])}
+        environment.update({ "SOCKET": "{}".format(self.__get_ip_address())})
+        environment.update({ "SERVICE": configuration['service'], "TYPE": configuration['type']})
+        for device in configuration['devices']:
+            devices.append("{}:{}".format(device, device))
+        if configuration['command']:
+            command = configuration['command']
+        container = self.dcli.containers.create(image, command=command, name = "{}_{}".format(sensor, configuration['type']), tty=True, devices=devices, environment=environment, labels={label: ""}, network=self.config["local_manager"]["network_name"], volumes=[])
 
-        environment.update({"CONFIG": "{{ 'sensors': {}, 'utilities': {{ 'logging': {}}}}}".format(self.config["sensors"], self.config["utilities"])})
-        environment.update({"SOCKET": "{}".format(self.__get_ip_address())})
+        return container
 
-        self.container = self.dcli.containers.create(image,
-                                                     command=command,
-                                                     name = "sensor_container",
-                                                     tty=True,
-                                                     devices=devices,
-                                                     environment=environment,
-                                                     labels={label: ""},
-                                                     network=self.config["local_manager"]["network_name"],
-                                                     volumes=[])
-        logger.info("...success")
+    def __start_containers(self, containers):
+        for container in containers:
+            container.start()
+            logger.info("Container started: {}".format(container.name))
 
     def run(self):
         logger.info("Started: {}".format(self.name))
+        self.__clean_old()
         while not self.event.is_set():
-            self.__clean_old()
             if len(self.dcli.containers.list(filters={"label": self.config["local_manager"]['label']})) == 0:
-                self.__create_container()
-                self.container.start()
-                self.event.wait(30)
-            if self.container.status in ["running", "created"]:
-                self.event.wait(30)
-            else:
-                logger.info(json.dumps(self.container.attrs, indent=4))
-                self.__clean_old()
-                self.container = None
-        if self.container:
-            self.container.remove(force=True, v=True)
-            self.container = None
+                self.containers = self.__initialize_containers()
+                self.__start_containers(self.containers)
+                self.event.wait(15)
+            for container in self.containers:
+                status = self.dcli.containers.get(container.id).status
+                logger.info("Checking local container status: {} [{}]".format(container.name, status))
+                if status not in ["running", "created"]:
+                    logger.error("Local container {} is {}: restarting".format(container.name, status))
+                    container.restart()
+            self.event.wait(30)
+        for container in self.containers:
+            container.remove(force=True, v=True)
+        self.containers = []
