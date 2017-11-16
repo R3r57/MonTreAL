@@ -7,6 +7,6 @@
     "building": "L9",
     "room": "Wohnzimmer"
   },
-  "sensors": {
+  "local_sensors": {
   }
 }
