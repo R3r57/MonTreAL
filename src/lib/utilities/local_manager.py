@@ -32,25 +32,25 @@ class LocalManager (threading.Thread):
         containers = []
         label = self.config['local_manager']['label']
         image = "{}-{}".format(self.config['local_manager']['image'], self.config['local_configuration']['meta']['architecture'])
-        if len(self.config['local_configuration']['sensors']) > 0:
-            for sensor, configuration  in self.config['local_configuration']['sensors'].items():
-                containers.append(self.__create_container(image, label, sensor, configuration))
+        if len(self.config['local_configuration']['local_sensors']) > 0:
+            for name, meta  in self.config['local_configuration']['local_sensors'].items():
+                containers.append(self.__create_container(image, label, name, meta))
         else:
-            for sensor, configuration in self.config['local_manager']['global_sensors'].items():
-                containers.append(self.__create_container(image, label, sensor, configuration))
+            for name, meta in self.config['local_manager']['global_sensors'].items():
+                containers.append(self.__create_container(image, label, name, meta))
         return containers
 
-    def __create_container(self, image, label, sensor, configuration):
+    def __create_container(self, image, label, name, meta):
         devices = []
         command = None
-        environment = {"CONFIG": "{{ 'sensors': {}, 'utilities': {{ 'logging': {}}}}}".format(self.config["sensors"],self.config["utilities"])}
+        environment = {"CONFIG": "{{ 'configuration': {}, 'utilities': {{ 'logging': {}}}}}".format(meta["configuration"],self.config["utilities"])}
         environment.update({ "SOCKET": "{}".format(self.__get_ip_address())})
-        environment.update({ "SERVICE": configuration['service'], "TYPE": configuration['type']})
-        for device in configuration['devices']:
+        environment.update({ "SERVICE": meta['service'], "TYPE": meta['type']})
+        for device in meta['devices']:
             devices.append("{}:{}".format(device, device))
-        if configuration['command']:
-            command = configuration['command']
-        container = self.dcli.containers.create(image, command=command, name = "{}_{}".format(sensor, configuration['type']), tty=True, devices=devices, environment=environment, labels={label: ""}, network=self.config["local_manager"]["network_name"], volumes=[])
+        if meta['command']:
+            command = meta['command']
+        container = self.dcli.containers.create(image, command=command, name = "{}_{}".format(name, meta['type']), tty=True, devices=devices, environment=environment, labels={label: ""}, network=self.config["local_manager"]["network_name"], volumes=[])
 
         return container
 
