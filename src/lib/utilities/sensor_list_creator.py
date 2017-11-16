@@ -32,6 +32,7 @@ class SensorListCreator(threading.Thread):
         building = data['building']
         room = data['room']
         device_id = data['device_id']
+        sensor_type = data['type']
         sensor_id = data['sensor_id']
 
         if building not in sensors['sensors']['buildings']:
@@ -39,8 +40,10 @@ class SensorListCreator(threading.Thread):
         if room not in sensors['sensors']['buildings'][building]['rooms']:
             sensors['sensors']['buildings'][building]['rooms'].update({ room: { "devices": {}}})
         if device_id not in sensors['sensors']['buildings'][building]['rooms'][room]['devices']:
-            sensors['sensors']['buildings'][building]['rooms'][room]['devices'].update({ device_id: { "sensors": []}})
-        if sensor_id not in sensors['sensors']['buildings'][building]['rooms'][room]['devices'][device_id]['sensors']:
-            sensors['sensors']['buildings'][building]['rooms'][room]['devices'][device_id]['sensors'].append(sensor_id)
+            sensors['sensors']['buildings'][building]['rooms'][room]['devices'].update({ device_id: { "sensors": {}}})
+        if sensor_type not in sensors['sensors']['buildings'][building]['rooms'][room]['devices'][device_id]['sensors']:
+            sensors['sensors']['buildings'][building]['rooms'][room]['devices'][device_id]['sensors'].update({ sensor_type: []})
+        if sensor_id not in sensors['sensors']['buildings'][building]['rooms'][room]['devices'][device_id]['sensors'][sensor_type]:
+            sensors['sensors']['buildings'][building]['rooms'][room]['devices'][device_id]['sensors'][sensor_type].append(sensor_id)
 
         return sensors

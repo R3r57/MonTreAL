@@ -24,7 +24,7 @@ class SensorMock (threading.Thread):
                     temp_derivation = random.randint(-2, 2)
                     hum_derivation = random.randint(-5, 5)
                     logger.info("Measurement {} put into queue".format(message_counter))
-                    measurement = Measurement(sensor_id, "Sensor Mock", (self.temp + temp_derivation), (self.hum + hum_derivation)).to_json()
+                    measurement = Measurement(sensor_id, "SensorMock", (self.temp + temp_derivation), (self.hum + hum_derivation)).to_json()
                     self.queue.put(json.dumps(measurement))
                     message_counter += 1
             self.event.wait(self.interval)

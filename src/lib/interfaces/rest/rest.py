@@ -15,7 +15,7 @@ class Rest(threading.Thread):
         self.app.use_relader = False
         api = Api(self.app)
         api.add_resource(SensorData,
-                         '/<string:prefix>/<string:device_id>/<string:sensor_id>',
+                         '/<string:prefix>/<string:device_id>/<string:sensor>/<string:sensor_id>',
                          resource_class_kwargs={"memcache_client": Client(config)})
         api.add_resource(SensorList,
                          '/<string:prefix>/sensorlist',
@@ -43,8 +43,8 @@ class SensorData(Resource):
         Resource.__init__(self)
         self.memcache_client = memcache_client
 
-    def get(self, prefix, device_id, sensor_id):
-        data = self.memcache_client.read("{}{}{}".format(str(prefix), str(device_id), str(sensor_id)))
+    def get(self, prefix, device_id, sensor, sensor_id):
+        data = self.memcache_client.read("{}{}{}{}".format(str(prefix), str(device_id), str(sensor), str(sensor_id)))
         return data
 
 class SensorList(Resource):
