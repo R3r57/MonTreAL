@@ -35,3 +35,38 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
 
                                                         (____): not implemented yet
 ```
+
+## Sensor Configuration
+
+### Temperature And Humidity
+
+#### Sensor Mock
+```
+"mock": {
+  "service": "temperature_humidity_sensor",
+  "type": "mock",
+  "device": [],
+  "command": "",
+  "configuration": {
+    "sensor_count": <int>,
+    "temperature": <float>,
+    "humidity": <float>,
+    "interval": <int>
+  }
+}
+```
+
+#### ASH2200
+```
+"ash2200": {
+  "service": "temperature_humidity_sensor",
+  "type": "ash2200",
+  "device": ["/dev/ttyUSB0"],
+  "command": "",
+  "configuration": {
+    "device": "/dev/ttyUSB0",
+    "baudrate": "9600",
+    "timeout": <int>
+  }
+}
+```
