@@ -1,6 +1,11 @@
-import logging, os, threading, json
+import json
+import logging
+import os
+import threading
+
 from influxdb import client as influxdb
 from lib.interfaces.influxdb.influxdb_converter import InfluxDBConverter
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

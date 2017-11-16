@@ -1,6 +1,11 @@
-import logging, threading, json, os
+import json
+import logging
+import os
+import threading
+
 from queue import Queue
 from lib.utilities.data import SensorData
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

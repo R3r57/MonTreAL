@@ -1,4 +1,9 @@
-import logging, threading, json, os, time
+import json
+import logging
+import os
+import threading
+import time
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

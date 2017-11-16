@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
-import os, signal, threading, time, json, sys, datetime, logging
+import datetime
+import json
+import logging
+import os
+import signal
+import sys
+import threading
+import time
+
 from lib.utilities.configuration import ConfigurationReader
 from lib.utilities.logger import LoggerFactory
 from services import Services
+
 
 configuration = ConfigurationReader.get()
 logger = LoggerFactory(configuration['utilities']['logging']).create_logger()
 logger = logging.LoggerAdapter(logger, {"class": os.path.basename(__file__)})
 
-##################################################################
-# Manager                                                        #
-##################################################################
 class Manager:
 
     def __init__(self, service_type):
@@ -82,10 +88,6 @@ class Manager:
                     self.__restart()
                     break
 
-
-##################################################################
-# EntryPoint                                                     #
-##################################################################
 if __name__ == '__main__':
     service_type = None
     if "SERVICE" in os.environ:

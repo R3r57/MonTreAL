@@ -1,5 +1,10 @@
+import json
+import logging
+import os
+import threading
+
 from lib.interfaces.memcache.client import Client
-import threading, json, logging, os
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

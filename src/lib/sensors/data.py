@@ -1,5 +1,6 @@
 import json
 
+
 class Measurement:
     def __init__(self, id, type, temp, hum):
         temperature = {"name": "temperature", "value": float(temp), "unit": "°C"}

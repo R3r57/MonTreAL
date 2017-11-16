@@ -1,4 +1,7 @@
-import logging, os, json
+import json
+import logging
+import os
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

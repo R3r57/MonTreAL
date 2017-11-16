@@ -1,5 +1,10 @@
-import os, gnsq, logging, threading
+import logging
+import os
+import threading
+import gnsq
+
 from queue import Queue
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

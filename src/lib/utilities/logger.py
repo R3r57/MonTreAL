@@ -1,5 +1,6 @@
 import logging
 
+
 class LoggerFactory:
 
     def __init__(self, config):

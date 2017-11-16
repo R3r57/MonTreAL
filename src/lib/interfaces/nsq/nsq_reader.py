@@ -1,6 +1,10 @@
-import os, logging, threading, gnsq
-from multiprocessing import Queue
-from multiprocessing import Process
+import logging
+import os
+import threading
+import gnsq
+
+from multiprocessing import Process, Queue
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

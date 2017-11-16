@@ -1,4 +1,11 @@
-import socket, docker, threading, json, os, base64, logging
+import base64
+import json
+import logging
+import os
+import socket
+import threading
+import docker
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

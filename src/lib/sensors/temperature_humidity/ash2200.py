@@ -1,5 +1,11 @@
-import logging, serial, json, threading, os
+import json
+import logging
+import os
+import threading
+import serial
+
 from lib.sensors.data import Measurement
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

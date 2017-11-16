@@ -1,5 +1,11 @@
-import logging, os, threading, json, random
+import json
+import logging
+import os
+import random
+import threading
+
 from lib.sensors.data import Measurement
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

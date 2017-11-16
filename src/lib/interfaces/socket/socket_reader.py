@@ -1,5 +1,12 @@
-import logging, threading, socket, sys, os, time
+import logging
+import os
+import socket
+import sys
+import threading
+import time
+
 from queue import Queue
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

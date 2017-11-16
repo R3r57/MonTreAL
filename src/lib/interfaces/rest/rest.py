@@ -1,8 +1,12 @@
-import logging, os, threading
-from flask import Flask
-from flask_restful import Resource, Api
-from lib.interfaces.memcache.client import Client
+import logging
+import os
+import threading
+
 from multiprocessing import Process
+from flask import Flask
+from flask_restful import Api, Resource
+from lib.interfaces.memcache.client import Client
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
