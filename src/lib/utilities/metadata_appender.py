@@ -13,11 +13,10 @@ class MetaDataAppender(threading.Thread):
         self.config = config
         self.input_queue = input_queue
         self.output_queue = output_queue
-        self.hostname = None
-        self.device_id = None
-        self.building = None
-        self.room = None
-        self.__init_metadata()
+        self.hostname = self.__get_hostname("/etc/hostname")
+        self.device_id = self.config['meta']['device_id']
+        self.building = self.config['location']['building']
+        self.room = self.config['location']['room']
         logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
@@ -34,12 +33,6 @@ class MetaDataAppender(threading.Thread):
                 logger.info("Data put in queue")
         logger.info("Stopped: {}".format(self.name))
 
-    def __init_metadata(self):
-        self.hostname = self.__get_hostname("/etc/hostname")
-        self.device_id = self.config['meta']['device_id']
-        self.building = self.config['location']['building']
-        self.room = self.config['location']['room']
-
     def __get_hostname(self, path):
         if os.path.isfile(path):
             with open(path) as file:
@@ -47,15 +40,6 @@ class MetaDataAppender(threading.Thread):
         else:
             logger.error("Unable to locate {} for hostname".format(path))
             return "unspecified"
-
-    def __get_file_content(self, filepath):
-        if os.path.isfile(filepath):
-            with open(filepath, "r") as f:
-                metadata = f.readlines()
-            return metadata
-        elif os.path.exists:
-            logger.error("File doesn't exist: {}".format(filepath))
-        return None
 
     def __convert(self, data):
         return SensorData(self.hostname,
