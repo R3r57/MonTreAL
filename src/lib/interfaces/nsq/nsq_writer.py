@@ -48,9 +48,9 @@ class NsqWriter (threading.Thread):
 
     def run(self):
         logger.info("Started {}".format(self.name))
-        if not self.__check_connection():
-           self.event.set()
-
+        while not self.event.is_set() and not self.__check_connection():
+            logger.info("Checking again in 60 seconds...")
+            self.event.wait(60)
         while not self.event.is_set():
             self.event.wait(1)
             while not self.queue.empty():
