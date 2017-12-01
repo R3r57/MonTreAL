@@ -5,7 +5,7 @@ WORKDIR /app
 
 RUN apt update && \
     apt install -qqy gcc build-essential python3-dev git && \
-    git clone https://github.comadafruit/Adafruit_Python_DHT.git && \
+    git clone https://github.com/adafruit/Adafruit_Python_DHT.git && \
     cd Adafruit_Python_DHT && \
     sudo python3 setup.py install --force-pi2
 
