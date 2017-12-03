@@ -25,13 +25,13 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
          |                 o- NsqReader - SensorList -o
     SocketWriter           |                          |- memcached - Rest
          |                 o- NsqReader - SensorData -o
-        [|]                |                          
+        [|]                |
          |                 o- NsqAdmin, NsqCli, etc.
     SocketReader           |
          |                 |\
   MetaDataAppender         | NsqLookup
          |                 |/
-      NsqWriter --------- Nsq                             
+      NsqWriter --------- Nsq
 
                                                         (____): not implemented yet
 ```
@@ -41,32 +41,42 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
 ### Temperature And Humidity
 
 #### Sensor Mock
-```
-"mock": {
-  "service": "temperature_humidity_sensor",
-  "type": "mock",
-  "device": [],
-  "command": "",
-  "configuration": {
-    "sensor_count": <int>,
-    "temperature": <float>,
-    "humidity": <float>,
-    "interval": <int>
-  }
-}
-```
+    "mock": {
+      "service": "temperature_humidity_sensor",
+      "type": "mock",
+      "device": [],
+      "command": "",
+      "configuration": {
+        "sensor_count": <int>,
+        "temperature": <float>,
+        "humidity": <float>,
+        "interval": <int>
+      }
+    }
 
 #### ASH2200
-```
-"ash2200": {
-  "service": "temperature_humidity_sensor",
-  "type": "ash2200",
-  "device": ["/dev/ttyUSB0"],
-  "command": "",
-  "configuration": {
-    "device": "/dev/ttyUSB0",
-    "baudrate": "9600",
-    "timeout": <int>
-  }
-}
-```
+    "ash2200": {
+      "service": "temperature_humidity_sensor",
+      "type": "ash2200",
+      "device": ["/dev/ttyUSB0"],
+      "command": "",
+      "configuration": {
+        "device": "/dev/ttyUSB0",
+        "baudrate": "9600",
+        "timeout": <int>
+      }
+    }
+
+#### DHT11/DHT22/AM2302
+    "dht": {
+      "service": "temperature_humidity_sensor",
+      "type": "dht",
+      "devices": ["/dev/mem"],
+      "command": "",
+      "configuration": {
+        "id": <int>,
+        "gpio": <int>,
+        "short_type": <11 or 22>,
+        "interval": <int>
+      }
+    }
