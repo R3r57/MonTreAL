@@ -57,7 +57,7 @@ class LocalManager (threading.Thread):
             devices.append("{}:{}".format(device, device))
         if meta['command']:
             command = meta['command']
-        container = self.dcli.containers.create(image, command=command, name = "{}_{}".format(name, meta['type']), tty=True, devices=devices, environment=environment, labels={label: ""}, network=self.config["local_manager"]["network_name"], volumes=[])
+        container = self.dcli.containers.create(image, command=command, name = "{}_{}".format(name, meta['type']), tty=True, privileged=True, devices=devices, environment=environment, labels={label: ""}, network=self.config["local_manager"]["network_name"], volumes=[])
 
         return container
 
