@@ -66,6 +66,9 @@ class Manager:
                     t.join(timeout=5)
                     logger.info("Joining {} (attempt: {})".format(t.name, counter))
             counter += 1
+            if counter >= 10:
+                logger.error("Unable to join all threads after {} attempts...exiting!".format(str(counter)))
+                break
         logger.info("Duration till exit: {}".format(str(datetime.datetime.now() - start)))
         sys.exit(0)
 
