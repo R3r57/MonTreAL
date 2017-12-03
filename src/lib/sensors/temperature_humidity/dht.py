@@ -32,7 +32,7 @@ class DHT(threading.Thread):
                     data = Measurement(self.id, self.type, temp, hum).to_json()
                     self.queue.put(json.dumps(data))
                     logger.info("Data put into queue")
-            self.event.wait(self.interval)
+                self.event.wait(self.interval)
             except Exception:
                 raise
         logger.info("Stopped: {}".format(self.name))
