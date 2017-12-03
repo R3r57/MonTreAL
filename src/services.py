@@ -44,7 +44,7 @@ class Services:
             from lib.utilities.metadata_appender import MetaDataAppender
             from lib.utilities.local_manager import LocalManager
             from lib.interfaces.nsq.nsq_writer import NsqWriter
-            
+
             threads = []
             local_configuration = self.__get_local_configuration()
 
@@ -77,8 +77,12 @@ class Services:
             if type == "ash2200":
                 from lib.sensors.temperature_humidity.ash2200 import ASH2200, USBSerial
                 usb_serial = USBSerial(self.config['configuration'])
-                ash2200 = ASH2200("USB", usb_serial, self.event, sensor_queue)
+                ash2200 = ASH2200("ASH2200", usb_serial, self.event, sensor_queue)
                 threads.append(ash2200)
+            elif type == "dht":
+                from lib.sensors.temperature_humidity.dht import DHT
+                dht = DHT("DHT", self.config['configuration'], self.event, sensor_queue)
+                threads.append(dht)
             elif type == "mock":
                 from lib.sensors.temperature_humidity.sensor_mock import SensorMock
                 mock = SensorMock("Mock", self.event, sensor_queue, self.config['configuration'])
