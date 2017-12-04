@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
-import os, signal, threading, time, json, sys, datetime, logging
+import datetime
+import json
+import logging
+import os
+import signal
+import sys
+import threading
+import time
+
 from lib.utilities.configuration import ConfigurationReader
 from lib.utilities.logger import LoggerFactory
 from services import Services
+
 
 configuration = ConfigurationReader.get()
 logger = LoggerFactory(configuration['utilities']['logging']).create_logger()
 logger = logging.LoggerAdapter(logger, {"class": os.path.basename(__file__)})
 
-##################################################################
-# Manager                                                        #
-##################################################################
 class Manager:
 
     def __init__(self, service_type):
@@ -54,12 +60,15 @@ class Manager:
         counter = 1
         while not len(self.threads) == 0:
             for t in self.threads:
-                t.join(timeout=2)
-                logger.info("Joining {} (attempt: {})".format(t.name, counter))
                 if not t.isAlive():
                     self.threads.remove(t)
-                    break
+                else:
+                    t.join(timeout=5)
+                    logger.info("Joining {} (attempt: {})".format(t.name, counter))
             counter += 1
+            if counter >= 10:
+                logger.error("Unable to join all threads after {} attempts...exiting!".format(str(counter)))
+                break
         logger.info("Duration till exit: {}".format(str(datetime.datetime.now() - start)))
         sys.exit(0)
 
@@ -82,10 +91,6 @@ class Manager:
                     self.__restart()
                     break
 
-
-##################################################################
-# EntryPoint                                                     #
-##################################################################
 if __name__ == '__main__':
     service_type = None
     if "SERVICE" in os.environ:

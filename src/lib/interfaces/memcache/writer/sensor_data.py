@@ -1,5 +1,10 @@
+import json
+import logging
+import os
+import threading
+
 from lib.interfaces.memcache.client import Client
-import threading, json, logging, os
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -19,8 +24,9 @@ class SensorDataWriter (threading.Thread):
             self.event.wait(2)
             while not self.queue.empty():
                 data = json.loads(self.queue.get().replace("'", '"'))
-                keyvalue = "{}{}{}".format(self.prefix,
+                keyvalue = "{}{}{}{}".format(self.prefix,
                                               data["device_id"],
+                                              data["type"],
                                               str(data["sensor_id"]))
                 self.memcached.write(keyvalue, data)
                 logger.info("Wrote data into memcache: {}".format(keyvalue))

@@ -42,12 +42,12 @@ services:
     command: memcached -vv
     networks:
       backend:
-
+  
   influxdb:
     image: influxdb:latest
     networks:
       backend:
-
+  
   chronograf:
     image: chronograf:latest
     command: chronograf --influxdb-url=http://influxdb:8086
@@ -55,14 +55,14 @@ services:
       backend:
     ports:
       - "8888:8888"
-
+  
   grafana:
     image: grafana/grafana:latest
     networks:
       backend:
     ports:
       - "3000:3000"
-
+  
   prometheus:
     image: prom/prometheus
     volumes:
@@ -73,17 +73,17 @@ services:
       backend:
     ports:
       - "9090:9090"
-
+  
 #################################################
   local_manager:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
-    image: montreal
+    image: r3r57/montreal:develop-amd64
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/montreal.json:/app/montreal.json
-      - ./config/local_configuration.json:/app/local_configuration.json
+      - ./config/local_configuration.json:/etc/montreal/local_configuration.json
     networks:
       backend:
     tty: true
@@ -96,7 +96,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
-    image: montreal
+    image: r3r57/montreal:develop-amd64
     volumes:
       - ./config/montreal.json:/app/montreal.json
     networks:
@@ -111,7 +111,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
-    image: montreal
+    image: r3r57/montreal:develop-amd64
     volumes:
       - ./config/montreal.json:/app/montreal.json
     networks:
@@ -126,7 +126,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
-    image: montreal
+    image: r3r57/montreal:develop-amd64
     volumes:
       - ./config/montreal.json:/app/montreal.json
     networks:
@@ -143,7 +143,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
-    image: montreal
+    image: r3r57/montreal:develop-amd64
     volumes:
       - ./config/montreal.json:/app/montreal.json
     networks:
@@ -160,7 +160,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
-    image: montreal
+    image: r3r57/montreal:develop-amd64
     volumes:
       - ./config/montreal.json:/app/montreal.json
     networks:

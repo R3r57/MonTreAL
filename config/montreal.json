@@ -1,18 +1,4 @@
 {
-  "sensors": {
-    "mock": {
-      "sensor_count": 5,
-      "temperature": 25.0,
-      "humidity": 62.0,
-      "interval": 60
-    },
-    "ash2200": {
-      "ids": "",
-      "device": "/dev/ttyUSB0",
-      "baudrate": "9600",
-      "timeout": 200
-    }
-  },
   "utilities": {
     "logging": {
       "level": "info",
@@ -30,18 +16,37 @@
         }
       }
     },
-    "local": {
-      "label": "local-container",
-      "image": "montreal",
+    "local_manager": {
+      "local_configuration": "/etc/montreal/local_configuration.json",
+      "label": "montreal-sensor-container",
+      "image": "r3r57/montreal:develop",
       "network_name": "montreal_backend",
-      "device": "",
-      "environment": {
-        "SERVICE": "sensor",
-        "TYPE": "mock"
+      "global_sensors": {
+        "sensor_mock_1": {
+          "service": "temperature_humidity_sensor",
+          "type": "mock",
+          "devices": [],
+          "command": "",
+          "configuration": {
+            "sensor_count": 5,
+            "temperature": 25.0,
+            "humidity": 62.0,
+            "interval": 60
+          }
+        },
+        "sensor_mock_2": {
+          "service": "temperature_humidity_sensor",
+          "type": "mock",
+          "devices": [],
+          "command": "",
+          "configuration": {
+            "sensor_count": 5,
+            "temperature": -25.0,
+            "humidity": -62.0,
+            "interval": 60
+          }
+        }
       }
-    },
-    "metadata": {
-      "local_configuration": "./local_configuration.json"
     },
     "sensorlist": {
       "interval": 300

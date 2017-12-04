@@ -1,5 +1,11 @@
-import logging, serial, json, threading, os
+import json
+import logging
+import os
+import threading
+import serial
+
 from lib.sensors.data import Measurement
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -28,6 +34,7 @@ class ASH2200(threading.Thread):
 
     def __init__(self, name, usb_serial, event, queue):
         threading.Thread.__init__(self)
+        self.type = "ASH2200"
         self.name = name
         self.usb_serial = usb_serial
         self.queue = queue
@@ -56,6 +63,6 @@ class ASH2200(threading.Thread):
             temp = splitted[(id + 2)].replace(",", ".")
             hum = splitted[(id + 10)].replace(",", ".")
             if temp and hum:
-                data.append(Measurement(id, temp, hum).to_json())
-        logger.info("data converted: {}".format([e for e in data]))
+                data.append(Measurement(id, self.type, temp, hum).to_json())
+        logger.info("Data converted: {}".format([e for e in data]))
         return data

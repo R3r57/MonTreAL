@@ -1,6 +1,10 @@
-import os, logging, threading, gnsq
-from multiprocessing import Queue
-from multiprocessing import Process
+import logging
+import os
+import threading
+import gnsq
+
+from multiprocessing import Process, Queue
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -52,15 +56,17 @@ class NsqReader (threading.Thread):
         logger.info("Started: {}".format(self.name))
         try:
             process = Process(target=self.reader.start)
+            while not self.event.is_set() and not self.__check_connection():
+                logger.info("Checking again in 60 seconds...")
+                self.event.wait(60)
             if not self.__check_connection():
-                self.event.set()
-            else:
                 self.writer.create_topic(self.config["topics"]["data_topic"])
             while not self.event.is_set():
+                # TODO: how to properly check if the process is still alive
                 if not process.is_alive():
                     logger.info("Subprocess for reader not alive...starting")
                     process.start()
-                self.event.wait(2)
+                self.event.wait(60)
         except Exception as e:
             logger.error("{}".format(e))
         finally:

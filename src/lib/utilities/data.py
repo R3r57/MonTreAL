@@ -1,4 +1,6 @@
-import json, time
+import json
+import time
+
 
 class SensorData:
     def __init__(self, hostname, device_id, building, room, data):

@@ -1,6 +1,11 @@
-import logging, os, threading, json
+import json
+import logging
+import os
+import threading
+
 from prometheus_client import start_http_server
-from prometheus_client.core import GaugeMetricFamily, REGISTRY
+from prometheus_client.core import REGISTRY, GaugeMetricFamily
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -22,7 +27,7 @@ class PrometheusWriter(threading.Thread):
             self.event.wait(2)
             while not self.queue.empty():
                 data = json.loads(self.queue.get())
-                key = "{}:{}:{}".format(data['hostname'], data['device_id'], data['sensor_id'])
+                key = "{}:{}:{}:{}".format(data['hostname'], data['device_id'], data['type'], data['sensor_id'])
                 if key in collectors:
                     REGISTRY.unregister(collectors[key])
                     collectors.pop(key, None)
@@ -41,10 +46,11 @@ class SensorDataCollector(object):
         self.building = data['building']
         self.room = data['room']
         self.sensor_id = data['sensor_id']
+        self.type = data['type']
         self.measurements = data['measurements']
 
     def collect(self):
-        gc = GaugeMetricFamily('montreal:{}'.format(self.key.replace("-", "_")), "documentation_placeholder", labels=['hostname', 'device_id', 'building', 'room', 'sensor_id', 'type'])
+        gc = GaugeMetricFamily('montreal:{}'.format(self.key.replace("-", "_")), "documentation_placeholder", labels=['hostname', 'device_id', 'building', 'room', 'sensor_id', 'type', 'name'])
         for mes in self.measurements:
-            gc.add_metric([self.hostname, self.device_id, self.building, self.room, str(self.sensor_id), mes['name']], mes['value'])
+            gc.add_metric([self.hostname, self.device_id, self.building, self.room, str(self.sensor_id), str(self.type), mes['name']], mes['value'])
         yield gc

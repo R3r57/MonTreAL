@@ -1,5 +1,9 @@
-import json, logging, os
+import json
+import logging
+import os
+
 from pymemcache.client.base import Client as PymemcacheClient
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

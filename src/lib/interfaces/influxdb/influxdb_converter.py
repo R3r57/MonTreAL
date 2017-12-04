@@ -1,4 +1,7 @@
-import logging, os, json
+import json
+import logging
+import os
+
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
@@ -10,6 +13,7 @@ class InfluxDBConverter:
     def convert(self, data):
         influxdb_json = InfluxDBFormat(self.name)
         influxdb_json.add_tag("sensor_id", data['sensor_id'])
+        influxdb_json.add_tag("type", data['type'])
         influxdb_json.add_tag("hostname", data['hostname'])
         influxdb_json.add_tag("device_id", data['device_id'])
         influxdb_json.add_tag("building", data['building'])
@@ -25,8 +29,8 @@ class InfluxDBFormat:
     def add_tag(self, tag, value):
         self.data['tags'].update({tag: value})
 
-    def add_measurement(self, type, value):
-        self.data['fields'].update({type: value})
+    def add_measurement(self, name, value):
+        self.data['fields'].update({name: value})
 
     def get(self):
         return [self.data]
