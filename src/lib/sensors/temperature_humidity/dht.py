@@ -30,6 +30,7 @@ class DHT(threading.Thread):
                 hum, temp = Adafruit_DHT.read_retry(sensor=self.short_type, pin=self.gpio)
                 if hum and temp:
                     data = Measurement(self.id, self.type, temp, hum).to_json()
+                    logger.info("Data received: {}".format(data))
                     self.queue.put(json.dumps(data))
                     logger.info("Data put into queue")
                 self.event.wait(self.interval)

@@ -64,5 +64,5 @@ class ASH2200(threading.Thread):
             hum = splitted[(id + 10)].replace(",", ".")
             if temp and hum:
                 data.append(Measurement(id, self.type, temp, hum).to_json())
-        logger.info("data converted: {}".format([e for e in data]))
+        logger.info("Data converted: {}".format([e for e in data]))
         return data
