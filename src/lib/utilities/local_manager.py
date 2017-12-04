@@ -38,7 +38,9 @@ class LocalManager (threading.Thread):
         logger.info("Creating containers...")
         containers = []
         label = self.config['local_manager']['label']
-        image = "{}-{}".format(self.config['local_manager']['image'], self.config['local_configuration']['meta']['architecture'])
+        image = self.config['local_manager']['image']
+        # TODO: Remove when multiarch works
+        # image = "{}-{}".format(self.config['local_manager']['image'], self.config['local_configuration']['meta']['architecture'])
         if len(self.config['local_configuration']['local_sensors']) > 0:
             for name, meta  in self.config['local_configuration']['local_sensors'].items():
                 containers.append(self.__create_container(image, label, name, meta))
