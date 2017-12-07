@@ -8,8 +8,8 @@ import sys
 import threading
 import time
 
-from lib.utilities.configuration import ConfigurationReader
-from lib.utilities.logger import LoggerFactory
+from utilities.configuration import ConfigurationReader
+from utilities.logger import LoggerFactory
 from services import Services
 
 

@@ -4,7 +4,7 @@ import os
 import threading
 import Adafruit_DHT
 
-from lib.sensors.data import Measurement
+from sensors.data import Measurement
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 

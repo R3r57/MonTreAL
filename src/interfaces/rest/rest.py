@@ -5,7 +5,7 @@ import threading
 from multiprocessing import Process
 from flask import Flask
 from flask_restful import Api, Resource
-from lib.interfaces.memcache.client import Client
+from interfaces.memcache.client import Client
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})

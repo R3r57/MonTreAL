@@ -3,12 +3,12 @@ import logging
 import os
 import threading
 
-from lib.interfaces.memcache.client import Client
+from interfaces.memcache.client import Client
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class SensorDataWriter (threading.Thread):
+class SensorListWriter (threading.Thread):
     def __init__(self, name, event, queue, config, prefix="json"):
         threading.Thread.__init__(self)
         self.name = name
@@ -21,13 +21,10 @@ class SensorDataWriter (threading.Thread):
     def run(self):
         logger.info("Started: {}".format(self.name))
         while not self.event.is_set():
-            self.event.wait(2)
+            self.event.wait(30)
             while not self.queue.empty():
-                data = json.loads(self.queue.get().replace("'", '"'))
-                keyvalue = "{}{}{}{}".format(self.prefix,
-                                              data["device_id"],
-                                              data["type"],
-                                              str(data["sensor_id"]))
+                data = json.loads(self.queue.get().replace("\'", '\"'))
+                keyvalue = "{}sensorlist".format(self.prefix)
                 self.memcached.write(keyvalue, data)
                 logger.info("Wrote data into memcache: {}".format(keyvalue))
         logger.info("Stopped: {}".format(self.name))

@@ -3,7 +3,7 @@ import logging
 import os
 
 from multiprocessing import Queue
-from lib.interfaces.nsq.nsq_reader import NsqReader
+from interfaces.nsq.nsq_reader import NsqReader
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
@@ -40,10 +40,10 @@ class Services:
             logger.error("Local configuration file not found: {}".format(local_configuration_path))
 
     def __create_local_manager(self):
-            from lib.interfaces.socket.socket_reader import SocketReader
-            from lib.utilities.metadata_appender import MetaDataAppender
-            from lib.utilities.local_manager import LocalManager
-            from lib.interfaces.nsq.nsq_writer import NsqWriter
+            from interfaces.socket.socket_reader import SocketReader
+            from utilities.metadata_appender import MetaDataAppender
+            from utilities.local_manager import LocalManager
+            from interfaces.nsq.nsq_writer import NsqWriter
 
             threads = []
             local_configuration = self.__get_local_configuration()
@@ -68,23 +68,23 @@ class Services:
 
     """
     def __create_temperature_humidity_sensor(self):
-            from lib.interfaces.socket.socket_writer import SocketWriter
+            from interfaces.socket.socket_writer import SocketWriter
             threads = []
             type = os.environ['TYPE']
 
             sensor_queue = Queue(maxsize=10)
 
             if type == "ash2200":
-                from lib.sensors.temperature_humidity.ash2200 import ASH2200, USBSerial
+                from sensors.temperature_humidity.ash2200 import ASH2200, USBSerial
                 usb_serial = USBSerial(self.config['configuration'])
                 ash2200 = ASH2200("ASH2200", usb_serial, self.event, sensor_queue)
                 threads.append(ash2200)
             elif type == "dht":
-                from lib.sensors.temperature_humidity.dht import DHT
+                from sensors.temperature_humidity.dht import DHT
                 dht = DHT("DHT", self.config['configuration'], self.event, sensor_queue)
                 threads.append(dht)
             elif type == "mock":
-                from lib.sensors.temperature_humidity.sensor_mock import SensorMock
+                from sensors.temperature_humidity.sensor_mock import SensorMock
                 mock = SensorMock("Mock", self.event, sensor_queue, self.config['configuration'])
                 threads.append(mock)
             else:
@@ -101,7 +101,7 @@ class Services:
 
     """
     def __create_sensor_data_memcache(self):
-            from lib.interfaces.memcache.writer.sensor_data import SensorDataWriter
+            from interfaces.memcache.writer.sensor_data import SensorDataWriter
             threads = []
 
             sensor_data_queue = Queue(maxsize=10)
@@ -120,7 +120,7 @@ class Services:
 
     """
     def __create_influxdb(self):
-            from lib.interfaces.influxdb.influxdb_writer import InfluxDBWriter
+            from interfaces.influxdb.influxdb_writer import InfluxDBWriter
             threads = []
 
             influxdb_queue = Queue(maxsize=10)
@@ -139,7 +139,7 @@ class Services:
 
     """
     def __create_prometheus(self):
-            from lib.interfaces.prometheus.prometheus_writer import PrometheusWriter
+            from interfaces.prometheus.prometheus_writer import PrometheusWriter
             threads = []
 
             prometheus_queue = Queue(maxsize=10)
@@ -158,7 +158,7 @@ class Services:
 
     """
     def __create_rest(self):
-        from lib.interfaces.rest.rest import Rest
+        from interfaces.rest.rest import Rest
         threads = []
 
         rest = Rest("REST", self.event, self.config['interfaces']['memcached'])
@@ -173,8 +173,8 @@ class Services:
 
     """
     def __create_sensor_list_creator(self):
-        from lib.utilities.sensor_list_creator import SensorListCreator
-        from lib.interfaces.memcache.writer.sensor_list import SensorListWriter
+        from utilities.sensor_list_creator import SensorListCreator
+        from interfaces.memcache.writer.sensor_list import SensorListWriter
         threads = []
 
         sensor_data_queue = Queue()
