@@ -3,7 +3,7 @@ import logging
 import os
 
 from multiprocessing import Queue
-from interfaces.nsq.nsq_reader import NsqReader
+from utilities.nsq.nsq_reader import NsqReader
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
@@ -40,10 +40,10 @@ class Services:
             logger.error("Local configuration file not found: {}".format(local_configuration_path))
 
     def __create_local_manager(self):
-            from interfaces.socket.socket_reader import SocketReader
-            from utilities.metadata_appender import MetaDataAppender
-            from utilities.local_manager import LocalManager
-            from interfaces.nsq.nsq_writer import NsqWriter
+            from utilities.socket.socket_reader import SocketReader
+            from utilities.local.metadata_appender import MetaDataAppender
+            from utilities.local.local_manager import LocalManager
+            from utilities.nsq.nsq_writer import NsqWriter
 
             threads = []
             local_configuration = self.__get_local_configuration()
@@ -68,7 +68,7 @@ class Services:
 
     """
     def __create_temperature_humidity_sensor(self):
-            from interfaces.socket.socket_writer import SocketWriter
+            from utilities.socket.socket_writer import SocketWriter
             threads = []
             type = os.environ['TYPE']
 
@@ -101,7 +101,7 @@ class Services:
 
     """
     def __create_sensor_data_memcache(self):
-            from interfaces.memcache.writer.sensor_data import SensorDataWriter
+            from memcache.writer.sensor_data import SensorDataWriter
             threads = []
 
             sensor_data_queue = Queue(maxsize=10)
@@ -120,7 +120,7 @@ class Services:
 
     """
     def __create_influxdb(self):
-            from interfaces.influxdb.influxdb_writer import InfluxDBWriter
+            from databases.influxdb.influxdb_writer import InfluxDBWriter
             threads = []
 
             influxdb_queue = Queue(maxsize=10)
@@ -139,7 +139,7 @@ class Services:
 
     """
     def __create_prometheus(self):
-            from interfaces.prometheus.prometheus_writer import PrometheusWriter
+            from databases.prometheus.prometheus_writer import PrometheusWriter
             threads = []
 
             prometheus_queue = Queue(maxsize=10)
@@ -158,7 +158,7 @@ class Services:
 
     """
     def __create_rest(self):
-        from interfaces.rest.rest import Rest
+        from restapi.rest import Rest
         threads = []
 
         rest = Rest("REST", self.event, self.config['interfaces']['memcached'])
@@ -174,7 +174,7 @@ class Services:
     """
     def __create_sensor_list_creator(self):
         from utilities.sensor_list_creator import SensorListCreator
-        from interfaces.memcache.writer.sensor_list import SensorListWriter
+        from memcache.writer.sensor_list import SensorListWriter
         threads = []
 
         sensor_data_queue = Queue()

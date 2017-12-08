@@ -3,7 +3,7 @@ import logging
 import os
 import threading
 
-from interfaces.memcache.client import Client
+from memcache.meta.client import Client
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})

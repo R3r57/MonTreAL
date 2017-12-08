@@ -4,7 +4,7 @@ import os
 import random
 import threading
 
-from sensors.data import Measurement
+from sensors.meta.data import Measurement
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})

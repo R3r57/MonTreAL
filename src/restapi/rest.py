@@ -5,7 +5,10 @@ import threading
 from multiprocessing import Process
 from flask import Flask
 from flask_restful import Api, Resource
-from interfaces.memcache.client import Client
+from memcache.meta.client import Client
+
+from restapi.resources.sensor_data import SensorData
+from restapi.resources.sensor_list import SensorList
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
@@ -41,21 +44,3 @@ class Rest(threading.Thread):
             process.terminate()
             process.join(15)
             logger.info("Stopped {}".format(self.name))
-
-class SensorData(Resource):
-    def __init__(self, memcache_client):
-        Resource.__init__(self)
-        self.memcache_client = memcache_client
-
-    def get(self, prefix, device_id, sensor, sensor_id):
-        data = self.memcache_client.read("{}{}{}{}".format(str(prefix), str(device_id), str(sensor), str(sensor_id)))
-        return data
-
-class SensorList(Resource):
-    def __init__(self, memcache_client):
-        super(SensorList, self).__init__()
-        self.memcache_client = memcache_client
-
-    def get(self, prefix):
-        data = self.memcache_client.read("{}sensorlist".format(prefix))
-        return data

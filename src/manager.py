@@ -9,7 +9,7 @@ import threading
 import time
 
 from utilities.configuration import ConfigurationReader
-from utilities.logger import LoggerFactory
+from utilities.logging.logger import LoggerFactory
 from services import Services
 
 
