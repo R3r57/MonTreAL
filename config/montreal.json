@@ -19,7 +19,7 @@
     "local_manager": {
       "local_configuration": "/etc/montreal/local_configuration.json",
       "label": "montreal-sensor-container",
-      "image": "r3r57/montreal:develop",
+      "image": "r3r57/montreal:develop-amd64",
       "network_name": "montreal_backend",
       "global_sensors": {
         "sensor_mock_1": {
