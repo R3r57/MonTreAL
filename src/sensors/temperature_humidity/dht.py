@@ -19,7 +19,7 @@ class DHT(AbstractSensor):
         logger.info("{} initialized successfully".format(self.name))
 
     def read(self):
-        self.event.wait(self.inverval)
+        self.event.wait(self.interval)
         logger.info("Reading data from GPIO...")
         hum, temp = Adafruit_DHT.read_retry(sensor=self.short_type, pin=self.gpio)
         if hum and temp:
