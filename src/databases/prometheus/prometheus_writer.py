@@ -24,13 +24,13 @@ class PrometheusWriter(threading.Thread):
         collectors = {}
         start_http_server(self.config['port'])
         while not self.event.is_set():
-            self.event.wait(2)
+            self.event.wait(self.config['interval'])
+            for key in collectors:
+                REGISTRY.unregister(collectors[key])
+                collectors.pop(key, None)
             while not self.queue.empty():
                 data = json.loads(self.queue.get())
                 key = "{}:{}:{}:{}".format(data['hostname'], data['device_id'], data['type'], data['sensor_id'])
-                if key in collectors:
-                    REGISTRY.unregister(collectors[key])
-                    collectors.pop(key, None)
                 collector = SensorDataCollector(key, data)
                 REGISTRY.register(collector)
                 collectors.update({ key: collector })
