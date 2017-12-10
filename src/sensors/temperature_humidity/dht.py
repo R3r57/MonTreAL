@@ -1,39 +1,28 @@
-import json
 import logging
 import os
-import threading
 import Adafruit_DHT
 
 from sensors.meta.data import Measurement
+from sensors.meta.sensor import AbstractSensor
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class DHT(threading.Thread):
+class DHT(AbstractSensor):
 
     def __init__(self, name, config, event, queue):
-        threading.Thread.__init__(self)
-        self.name = name
+        super(DHT, self).__init__(name, config, event, queue)
         self.id = config['id']
         self.gpio = config['gpio']
         self.short_type = config['short_type']
         self.interval = config['interval']
         self.type = "DHT{}".format(self.short_type)
-        self.queue = queue
-        self.event = event
         logger.info("{} initialized successfully".format(self.name))
 
-    def run(self):
-        logger.info("Started: {}".format(self.name))
-        while not self.event.is_set():
-            try:
-                logger.info("Reading data from GPIO...")
-                hum, temp = Adafruit_DHT.read_retry(sensor=self.short_type, pin=self.gpio)
-                if hum and temp:
-                    data = Measurement(self.id, self.type, temp, hum).to_json()
-                    logger.info("Data received: {}".format(data))
-                    self.queue.put(json.dumps(data))
-                    logger.info("Data put into queue")
-                self.event.wait(self.interval)
-            except Exception:
-                raise
-        logger.info("Stopped: {}".format(self.name))
+    def read(self):
+        self.event.wait(self.inverval)
+        logger.info("Reading data from GPIO...")
+        hum, temp = Adafruit_DHT.read_retry(sensor=self.short_type, pin=self.gpio)
+        if hum and temp:
+            measurement = Measurement(self.id, self.type, temp, hum).to_json()
+            logger.info("Data received: {}".format(measurement))
+        return [measurement]
