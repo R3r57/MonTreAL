@@ -27,7 +27,7 @@ class PrometheusWriter(threading.Thread):
             self.event.wait(self.config['interval'])
             for key in collectors:
                 REGISTRY.unregister(collectors[key])
-                collectors.pop(key, None)
+            collectors.clear()
             while not self.queue.empty():
                 data = json.loads(self.queue.get())
                 key = "{}:{}:{}:{}".format(data['hostname'], data['device_id'], data['type'], data['sensor_id'])
