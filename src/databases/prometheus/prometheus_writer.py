@@ -20,17 +20,18 @@ class PrometheusWriter(threading.Thread):
         logger.info("{} initialized successfully".format(self.name))
 
     def run(self):
+        # FIXME: outdated data is hold!
         logger.info("Started {}".format(self.name))
         collectors = {}
         start_http_server(self.config['port'])
         while not self.event.is_set():
-            self.event.wait(self.config['interval'])
-            for key in collectors:
-                REGISTRY.unregister(collectors[key])
-            collectors.clear()
+            self.event.wait(10)
             while not self.queue.empty():
                 data = json.loads(self.queue.get())
                 key = "{}:{}:{}:{}".format(data['hostname'], data['device_id'], data['type'], data['sensor_id'])
+                if key in collectors:
+                    REGISTRY.unregister(collectors[key])
+                    collectors.pop(key, None)
                 collector = SensorDataCollector(key, data)
                 REGISTRY.register(collector)
                 collectors.update({ key: collector })
