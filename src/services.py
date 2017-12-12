@@ -30,7 +30,7 @@ class Services:
 
     """
     def __get_local_configuration(self):
-        local_configuration_path = self.config['utilities']['local_manager']['local_configuration']
+        local_configuration_path = self.config['services']['local_manager']['local_configuration']
         logger.info("Local configuration file set to {}".format(local_configuration_path))
         if os.path.isfile(local_configuration_path):
             with open(local_configuration_path, 'r') as file:
@@ -53,8 +53,8 @@ class Services:
 
             socket_reader = SocketReader("SocketReader", self.event, message_queue)
             meta_data_appender = MetaDataAppender("MetaData", self.event, message_queue, meta_queue, local_configuration)
-            nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['interfaces']['nsq'])
-            local_manager = LocalManager("LocalManager", self.event, {"local_manager": self.config['utilities']['local_manager'], "local_configuration": local_configuration, "utilities": self.config["utilities"]["logging"]})
+            nsq_writer = NsqWriter("NsqWriter", self.event, meta_queue, self.config['services']['nsq'])
+            local_manager = LocalManager("LocalManager", self.event, {"local_manager": self.config['services']['local_manager'], "local_configuration": local_configuration, "utilities": self.config["utilities"]["logging"]})
 
             threads.append(socket_reader)
             threads.append(meta_data_appender)
@@ -106,8 +106,8 @@ class Services:
 
             sensor_data_queue = Queue(maxsize=10)
 
-            nsq_reader = NsqReader("SensorData_Memcache_NsqReader", self.event, sensor_data_queue, self.config['interfaces']['nsq'], channel="memcache_sensor_data")
-            sensor_data_memcache_writer = SensorDataWriter("SensorData_Memcache_Writer", self.event, sensor_data_queue, self.config['interfaces']['memcached'])
+            nsq_reader = NsqReader("SensorData_Memcache_NsqReader", self.event, sensor_data_queue, self.config['services']['nsq'], channel="memcache_sensor_data")
+            sensor_data_memcache_writer = SensorDataWriter("SensorData_Memcache_Writer", self.event, sensor_data_queue, self.config['services']['memcached'])
 
             threads.append(nsq_reader)
             threads.append(sensor_data_memcache_writer)
@@ -125,8 +125,8 @@ class Services:
 
             influxdb_queue = Queue(maxsize=10)
 
-            nsq_reader = NsqReader("InfluxDB_NsqReader", self.event, influxdb_queue, self.config['interfaces']['nsq'], channel="influxdb")
-            influxdb_writer = InfluxDBWriter("InfluxDB_Writer", self.event, influxdb_queue, self.config['interfaces']['influxdb'])
+            nsq_reader = NsqReader("InfluxDB_NsqReader", self.event, influxdb_queue, self.config['services']['nsq'], channel="influxdb_writer")
+            influxdb_writer = InfluxDBWriter("InfluxDB_Writer", self.event, influxdb_queue, self.config['services']['influxdb_writer'])
 
             threads.append(nsq_reader)
             threads.append(influxdb_writer)
@@ -144,8 +144,8 @@ class Services:
 
             prometheus_queue = Queue(maxsize=10)
 
-            nsq_reader = NsqReader("Prometheus_NsqReader", self.event, prometheus_queue, self.config['interfaces']['nsq'], channel="prometheus")
-            prometheus_writer = PrometheusWriter("Prometheus_Writer", self.event, prometheus_queue, self.config['interfaces']['prometheus'])
+            nsq_reader = NsqReader("Prometheus_NsqReader", self.event, prometheus_queue, self.config['services']['nsq'], channel="prometheus_writer")
+            prometheus_writer = PrometheusWriter("Prometheus_Writer", self.event, prometheus_queue, self.config['services']['prometheus_writer'])
 
             threads.append(nsq_reader)
             threads.append(prometheus_writer)
@@ -161,7 +161,7 @@ class Services:
         from restapi.rest import Rest
         threads = []
 
-        rest = Rest("REST", self.event, self.config['interfaces']['memcached'])
+        rest = Rest("REST", self.event, self.config['services']['memcached'])
 
         threads.append(rest)
 
@@ -180,9 +180,9 @@ class Services:
         sensor_data_queue = Queue()
         sensor_list_queue = Queue(maxsize=10)
 
-        nsq_reader = NsqReader("SensorListCreator_NsqReader", self.event, sensor_data_queue, self.config['interfaces']['nsq'], channel="memcache_sensorlist")
+        nsq_reader = NsqReader("SensorListCreator_NsqReader", self.event, sensor_data_queue, self.config['services']['nsq'], channel="memcache_sensorlist")
         sensor_list_creator = SensorListCreator("SensorListCreator", self.event, sensor_data_queue, sensor_list_queue, self.config['utilities']['sensorlist'])
-        sensor_list_memcache_writer = SensorListWriter("SensorListCreator_Memcache_Writer", self.event, sensor_list_queue, self.config['interfaces']['memcached'])
+        sensor_list_memcache_writer = SensorListWriter("SensorListCreator_Memcache_Writer", self.event, sensor_list_queue, self.config['services']['memcached'])
 
         threads.append(sensor_list_creator)
         threads.append(nsq_reader)

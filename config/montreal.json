@@ -15,7 +15,9 @@
           "port": 12202
         }
       }
-    },
+    }
+  },
+  "services": {
     "local_manager": {
       "local_configuration": "/etc/montreal/local_configuration.json",
       "label": "montreal-sensor-container",
@@ -50,9 +52,7 @@
     },
     "sensorlist": {
       "interval": 300
-    }
-  },
-  "interfaces": {
+    },
     "nsq": {
       "nsqd": {
         "ip": "nsqd",
@@ -81,7 +81,7 @@
       "key_expiration": 600,
       "noreply_flag": true
     },
-    "influxdb": {
+    "influxdb_writer": {
       "ip": "influxdb",
       "port": 8086,
       "user": "root",
@@ -89,7 +89,7 @@
       "database": "montreal",
       "measurements": "Temperature & Humidity"
     },
-    "prometheus": {
+    "prometheus_writer": {
       "port": 8000
     }
   }
