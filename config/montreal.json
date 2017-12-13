@@ -21,12 +21,12 @@
     "local_manager": {
       "local_configuration": "/etc/montreal/local_configuration.json",
       "label": "montreal-sensor-container",
-      "image": "r3r57/montreal:develop-amd64",
       "network_name": "montreal_backend",
       "global_sensors": {
         "sensor_mock_1": {
           "service": "temperature_humidity_sensor",
           "type": "mock",
+          "image": "r3r57/montreal:develop-amd64",
           "devices": [],
           "command": "",
           "configuration": {
@@ -39,6 +39,7 @@
         "sensor_mock_2": {
           "service": "temperature_humidity_sensor",
           "type": "mock",
+          "image": "r3r57/montreal:develop-amd64",
           "devices": [],
           "command": "",
           "configuration": {
