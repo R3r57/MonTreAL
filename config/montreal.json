@@ -92,6 +92,13 @@
     },
     "prometheus_writer": {
       "port": 8000
+    },
+    "open_weather_map": {
+      "id": 1,
+      "key": "cfa4d49db2709aaeb023d2966ab55dfc",
+      "city": "Bamberg",
+      "country": "de",
+      "interval": 60
     }
   }
 }
