@@ -6,12 +6,12 @@ import json
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
 from sensors.meta.data import Measurement
-from sensors.meta.sensor import AbstractSensor
+from sensors.meta.provider import AbstractSensor
 
-class OpenWatherMap(AbstractSensor):
+class OpenWeatherMap(AbstractSensor):
 
     def __init__(self, name, config, event, queue):
-        super(OpenWatherMap, self).__init__(name,config, event, queue)
+        super(OpenWeatherMap, self).__init__(name,config, event, queue)
         self.id = config['id']
         self.key = config['key']
         self.city = config['city']
@@ -30,6 +30,8 @@ class OpenWatherMap(AbstractSensor):
         if data:
             temp = data['main']['temp'] - 273.15
             hum = data['main']['humidity']
-            measurement = Measurement(self.id, self.type, temp, hum).to_json()
+            measurement = Measurement(self.id, self.type)
+            measurement.add("temperature", temp, "°C")
+            measurement.add("humidity", temp, "%")
             logger.info("Data received: {}".format(measurement))
         return [measurement]
