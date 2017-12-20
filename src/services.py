@@ -181,7 +181,7 @@ class Services:
         sensor_list_queue = Queue(maxsize=10)
 
         nsq_reader = NsqReader("SensorListCreator_NsqReader", self.event, sensor_data_queue, self.config['services']['nsq'], channel="memcache_sensorlist")
-        sensor_list_creator = SensorListCreator("SensorListCreator", self.event, sensor_data_queue, sensor_list_queue, self.config['utilities']['sensorlist'])
+        sensor_list_creator = SensorListCreator("SensorListCreator", self.event, sensor_data_queue, sensor_list_queue, self.config['services']['sensorlist'])
         sensor_list_memcache_writer = SensorListWriter("SensorListCreator_Memcache_Writer", self.event, sensor_list_queue, self.config['services']['memcached'])
 
         threads.append(sensor_list_creator)
