@@ -87,6 +87,10 @@ class Services:
                 from sensors.temperature_humidity.sensor_mock import SensorMock
                 mock = SensorMock("Mock", self.event, sensor_queue, self.config['configuration'])
                 threads.append(mock)
+            elif type == "openweathermap":
+                from sensors.temperature_humidity.openweathermap import OpenWeatherMap
+                open_weather_map = OpenWeatherMap("OpenWeatherMap", self.config['configuration'], self.event, sensor_queue)
+                threads.append(open_weather_map)
             else:
                 logger.error("No sensortype selected: {}".format(type))
 

@@ -8,3 +8,4 @@ pymemcache
 influxdb
 pygelf
 prometheus_client
+certifi
