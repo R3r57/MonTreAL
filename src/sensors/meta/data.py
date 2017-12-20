@@ -2,14 +2,11 @@ import json
 
 
 class Measurement:
-    def __init__(self, id, type, temp, hum):
-        temperature = {"name": "temperature", "value": float(temp), "unit": "°C"}
-        humidity = {"name": "humidity", "value": float(hum), "unit": "%"}
-        measurements = [temperature, humidity]
-        self.data = {"sensor_id": id, "type": type, "measurements": measurements}
+    def __init__(self, id, type):
+        self.data = {"sensor_id": id, "type": type, "measurements": []}
 
-    def get_data(self):
-        return self.data
+    def add(self, name, value, unit):
+        self.data['measurements'].append({"name": name, "value": float(value), "unit": unit})
 
     def to_json(self):
         return json.dumps(self.data)

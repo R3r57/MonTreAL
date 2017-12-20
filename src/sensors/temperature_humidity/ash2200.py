@@ -33,7 +33,10 @@ class ASH2200(AbstractSensor):
             temp = splitted[(id + 2)].replace(",", ".")
             hum = splitted[(id + 10)].replace(",", ".")
             if temp and hum:
-                data.append(Measurement(id, self.type, temp, hum).to_json())
+                measurement = Measurement(id, self.type)
+                measurement.add("temperature", temp, "°C")
+                measurement.add("humidity", hum, "°C")
+                data.append(measurement)
         logger.info("Data converted: {}".format([e for e in data]))
         return data
 

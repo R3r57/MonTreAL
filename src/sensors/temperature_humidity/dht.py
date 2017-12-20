@@ -23,6 +23,8 @@ class DHT(AbstractSensor):
         logger.info("Reading data from GPIO...")
         hum, temp = Adafruit_DHT.read_retry(sensor=self.short_type, pin=self.gpio)
         if hum and temp:
-            measurement = Measurement(self.id, self.type, temp, hum).to_json()
+            measurement = Measurement(self.id, self.type)
+            measurement.add("temperature", temp, "°C")
+            measurement.add("humidity", hum, "%")
             logger.info("Data received: {}".format(measurement))
         return [measurement]
