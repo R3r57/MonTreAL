@@ -28,7 +28,7 @@ class AbstractSensor(threading.Thread):
                 if measurements:
                     for measurement in measurements:
                         logger.info("Data received: {}".format(measurement))
-                        self.queue.put(json.dumps(measurement))
+                        self.queue.put(json.dumps(measurement.to_json()))
                     logger.info("Data put into queue")
             except Exception:
                 raise
