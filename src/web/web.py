@@ -7,15 +7,15 @@ from flask import Flask
 from flask_restful import Api, Resource
 from memcache.meta.client import Client
 
-from restapi.resources.sensor_data import SensorData
-from restapi.resources.sensor_list import SensorList
+from web.resources.sensor_data import SensorData
+from web.resources.sensor_list import SensorList
 
 
 logger = logging.LoggerAdapter(logging.getLogger("montreal"), {"class": os.path.basename(__file__)})
 
-class Rest(threading.Thread):
+class Web(threading.Thread):
     def __init__(self, name, event, config):
-        super(Rest, self).__init__()
+        super(Web, self).__init__()
         self.name = name
         self.event = event
         self.app = Flask(__name__)
@@ -35,7 +35,7 @@ class Rest(threading.Thread):
             process = Process(target=self.app.run, kwargs={"host": "0.0.0.0", "debug": True})
             while not self.event.is_set():
                 if not process.is_alive():
-                    logger.info("Subprocess for REST not alive...starting")
+                    logger.info("Subprocess for Web not alive...starting")
                     process.start()
                 self.event.wait(2)
         except Exception as e:

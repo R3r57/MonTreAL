@@ -23,7 +23,7 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
          |                 o- NsqReader - PrometheusWriter - Prometheus -o- (Alertmanager)
        Sensor              |
          |                 o- NsqReader - SensorList -o
-    SocketWriter           |                          |- memcached - Rest
+    SocketWriter           |                          |- memcached - Web
          |                 o- NsqReader - SensorData -o
         [|]                |
          |                 o- NsqAdmin, NsqCli, etc.

@@ -16,7 +16,7 @@ class Services:
             "influxdb_writer": self.__create_influxdb,
             "local_manager": self.__create_local_manager,
             "prometheus_writer": self.__create_prometheus,
-            "rest": self.__create_rest,
+            "web": self.__create_web,
             "sensor_data_memcache_writer": self.__create_sensor_data_memcache,
             "sensor_list_memcache_writer": self.__create_sensor_list_creator,
             "temperature_humidity_sensor": self.__create_temperature_humidity_sensor
@@ -158,16 +158,16 @@ class Services:
 
 
     """
-    REST
+    Web
 
     """
-    def __create_rest(self):
-        from restapi.rest import Rest
+    def __create_web(self):
+        from web.web import Web
         threads = []
 
-        rest = Rest("REST", self.event, self.config['services']['memcached'])
+        web = Web("Web", self.event, self.config['services']['memcached'])
 
-        threads.append(rest)
+        threads.append(web)
 
         return threads
 

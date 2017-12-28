@@ -42,12 +42,12 @@ services:
     command: memcached -vv
     networks:
       backend:
-  
+
   influxdb:
     image: influxdb:latest
     networks:
       backend:
-  
+
   chronograf:
     image: chronograf:latest
     command: chronograf --influxdb-url=http://influxdb:8086
@@ -55,14 +55,14 @@ services:
       backend:
     ports:
       - "8888:8888"
-  
+
   grafana:
     image: grafana/grafana:latest
     networks:
       backend:
     ports:
       - "3000:3000"
-  
+
   prometheus:
     image: prom/prometheus
     volumes:
@@ -73,7 +73,7 @@ services:
       backend:
     ports:
       - "9090:9090"
-  
+
 #################################################
   local_manager:
     build:
@@ -139,7 +139,7 @@ services:
       - "8000:8000"
 
 #################################################
-  rest:
+  web:
     build:
       context: ./
       dockerfile: Dockerfile.amd64
@@ -153,7 +153,7 @@ services:
     tty: true
     environment:
       CONFIG: ./montreal.json
-      SERVICE: "rest"
+      SERVICE: "web"
 
 #################################################
   sensor_list:
