@@ -44,6 +44,7 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
     "mock": {
       "service": "temperature_humidity_sensor",
       "type": "mock",
+      "image": "r3r57/montreal:latest-multiarch",
       "device": [],
       "command": "",
       "configuration": {
@@ -54,10 +55,11 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
       }
     }
 
-#### ASH2200
+#### [ASH2200](https://www.elv.de/elv-funk-aussensensor-ash-2200-fuer-z-b-usb-wde-1-ipwe-1.html)
     "ash2200": {
       "service": "temperature_humidity_sensor",
       "type": "ash2200",
+      "image": "r3r57/montreal:latest-multiarch",
       "device": ["/dev/ttyUSB0"],
       "command": "",
       "configuration": {
@@ -67,16 +69,33 @@ We evaluate our prototype of the system MonTreAL at the University Library of Ba
       }
     }
 
-#### DHT11/DHT22/AM2302
+#### [DHT11/DHT22/AM2302](https://learn.adafruit.com/dht/overview)
     "dht": {
       "service": "temperature_humidity_sensor",
       "type": "dht",
+      "image": "r3r57/montreal:latest-multiarch",
       "devices": ["/dev/mem"],
       "command": "",
       "configuration": {
         "id": <int>,
         "gpio": <int>,
         "short_type": <11 or 22>,
+        "interval": <int>
+      }
+    }
+
+#### [OpenWatherMap](https://openweathermap.org/)
+    "open_weather_map": {
+      "service": "temperature_humidity_sensor",
+      "type": "openweathermap",
+      "image": "r3r57/montreal:latest-multiarch",
+      "devices": [],
+      "command": "",
+      "configuration": {
+        "id": <int>,
+        "key": <string>,
+        "city": <string>,
+        "country": <string>,
         "interval": <int>
       }
     }
